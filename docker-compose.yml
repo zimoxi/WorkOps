@@ -1,0 +1,21 @@
+services:
+  workops:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: workops
+    restart: unless-stopped
+    ports:
+      - "8099:8099"
+    environment:
+      WORKOPS_DATA: /app/data
+      # SSH_AUTH_SOCK: /ssh-agent
+    volumes:
+      - ./data:/app/data
+      # Private key / existing SSH config mode. Includes known_hosts.
+      # - /root/.ssh:/root/.ssh:ro
+      # Existing SSH agent mode, when an agent socket is available.
+      # - ${SSH_AUTH_SOCK}:/ssh-agent
+      # Optional: mount rclone config when using cloud sync from inside container.
+      # - /root/.config/rclone:/root/.config/rclone:ro
+    # Intentionally no privileged mode and no docker.sock mount.
