@@ -1,7 +1,7 @@
 /**
  * WorkOps Task Engine — 任务引擎
  * Sprint006: Task Engine Foundation
- * Sprint007: 迁移到 Components（兼容层保留，Timeline 保持内部）
+ * Sprint008: 删除兼容层，直接调用 Components
  *
  * Task 是 Operation 的一次执行实例。
  * Task 不负责执行命令，只管理生命周期和状态。
@@ -12,6 +12,12 @@
  */
 (function () {
   "use strict";
+
+  // ─── 模块级安全检查 ────────────────────────────────────
+  if (!window.Components) {
+    console.error("Components library not loaded.");
+    return;
+  }
 
   // ─── Mock Task Store（模块私有）─────────────────────────
   var MOCK_TASK_STORE = [
@@ -48,48 +54,6 @@
       .replace(/"/g, "&quot;");
   }
 
-  // ─── 兼容层：StatusBadge（转调 Components）──────────────
-  // Sprint008 将删除此兼容层
-  function renderStatusBadge(status) {
-    if (window.Components && Components.renderStatusBadge) {
-      return Components.renderStatusBadge(status, "task");
-    }
-    return '<span class="status-badge">● ' + esc(status) + "</span>";
-  }
-
-  // ─── 兼容层：TaskCard（转调 Components）─────────────────
-  // Sprint008 将删除此兼容层
-  function renderTaskCard(task) {
-    if (window.Components && Components.renderCard) {
-      var isZh = WorkOps.getLang() === "zh";
-      var durationText = task.status === "pending"
-        ? (isZh ? "等待执行" : "Waiting")
-        : task.status === "running"
-          ? (isZh ? "进行中" : "In Progress")
-          : task.duration;
-      var endText = task.end_time === "-" ? "-" : task.end_time;
-
-      var header =
-        '<span class="task-card-name">' + esc(task.operation_name) + "</span>" +
-        renderStatusBadge(task.status);
-
-      var body =
-        '<div class="task-card-field"><span class="task-card-label">' + esc(t("task.device")) + '</span><span class="task-card-value">' + esc(task.device_name) + "</span></div>" +
-        '<div class="task-card-field"><span class="task-card-label">' + esc(t("task.resource")) + '</span><span class="task-card-value">' + esc(task.resource_name) + "</span></div>" +
-        '<div class="task-card-field"><span class="task-card-label">' + esc(t("task.startTime")) + '</span><span class="task-card-value">' + esc(task.start_time) + "</span></div>" +
-        '<div class="task-card-field"><span class="task-card-label">' + esc(t("task.endTime")) + '</span><span class="task-card-value">' + esc(endText) + "</span></div>" +
-        '<div class="task-card-field"><span class="task-card-label">' + esc(t("task.duration")) + '</span><span class="task-card-value">' + esc(durationText) + "</span></div>" +
-        '<div class="task-card-field"><span class="task-card-label">' + esc(t("task.result")) + '</span><span class="task-card-value">' + esc(task.result) + "</span></div>";
-
-      return Components.renderCard({
-        header: header,
-        body: body,
-        dataAttributes: { "data-operation-id": task.operation_id }
-      });
-    }
-    return '<div class="task-card">Card unavailable</div>';
-  }
-
   // ─── Task Timeline（保持内部实现，不迁移）────────────────
   // COMPONENT_GUIDELINES 规定：三次以上重复才迁移
   // Timeline 目前只有 Task 使用，保持内部实现
@@ -113,7 +77,7 @@
         '<div class="task-timeline-item">' +
         '<div class="task-timeline-header">' +
         '<span class="task-timeline-name">' + esc(task.operation_name) + "</span>" +
-        renderStatusBadge(task.status) +
+        Components.renderStatusBadge(task.status, "task") +
         "</div>" +
         '<div class="task-timeline-meta">' +
         esc(task.start_time) + " | " + esc(durationText) + " | " + esc(task.result) +
@@ -127,32 +91,6 @@
       '<div class="task-timeline-list">' + items + "</div>" +
       "</div>"
     );
-  }
-
-  // ─── 兼容层：TaskSelector（转调 Components）─────────────
-  // Sprint008 将删除此兼容层
-  function renderTaskSelector(selectedId, onChangeFn) {
-    if (window.Components && Components.renderSelector) {
-      var isZh = WorkOps.getLang() === "zh";
-      var placeholder = isZh ? "-- 请选择任务 --" : "-- Select a task --";
-      var label = isZh ? "选择任务" : "Select Task";
-
-      var options = [];
-      for (var i = 0; i < MOCK_TASK_STORE.length; i++) {
-        var task = MOCK_TASK_STORE[i];
-        var date = task.start_time.split(" ")[0];
-        options.push({ value: task.id, label: task.operation_name + " - " + date + " (" + task.status + ")" });
-      }
-
-      return Components.renderSelector({
-        label: label,
-        placeholder: placeholder,
-        options: options,
-        selectedValue: selectedId,
-        onChange: onChangeFn
-      });
-    }
-    return '<div class="task-selector">Selector unavailable</div>';
   }
 
   // ─── Group Tasks by Operation ───────────────────────────
@@ -204,7 +142,28 @@
         html += '<h3 class="task-operation-title">' + esc(opName) + "</h3>";
         html += '<div class="task-card-grid">';
         for (var ti = 0; ti < opTasks.length; ti++) {
-          html += renderTaskCard(opTasks[ti]);
+          var task = opTasks[ti];
+          var isZh = WorkOps.getLang() === "zh";
+          var durationText = task.status === "pending"
+            ? (isZh ? "等待执行" : "Waiting")
+            : task.status === "running"
+              ? (isZh ? "进行中" : "In Progress")
+              : task.duration;
+          var endText = task.end_time === "-" ? "-" : task.end_time;
+
+          html += Components.renderCard({
+            header:
+              '<span class="task-card-name">' + esc(task.operation_name) + "</span>" +
+              Components.renderStatusBadge(task.status, "task"),
+            body:
+              '<div class="task-card-field"><span class="task-card-label">' + esc(t("task.device")) + '</span><span class="task-card-value">' + esc(task.device_name) + "</span></div>" +
+              '<div class="task-card-field"><span class="task-card-label">' + esc(t("task.resource")) + '</span><span class="task-card-value">' + esc(task.resource_name) + "</span></div>" +
+              '<div class="task-card-field"><span class="task-card-label">' + esc(t("task.startTime")) + '</span><span class="task-card-value">' + esc(task.start_time) + "</span></div>" +
+              '<div class="task-card-field"><span class="task-card-label">' + esc(t("task.endTime")) + '</span><span class="task-card-value">' + esc(endText) + "</span></div>" +
+              '<div class="task-card-field"><span class="task-card-label">' + esc(t("task.duration")) + '</span><span class="task-card-value">' + esc(durationText) + "</span></div>" +
+              '<div class="task-card-field"><span class="task-card-label">' + esc(t("task.result")) + '</span><span class="task-card-value">' + esc(task.result) + "</span></div>",
+            dataAttributes: { "data-operation-id": task.operation_id }
+          });
         }
         html += "</div></div>";
       }
@@ -212,11 +171,25 @@
 
     html += "</div>";
 
+    // Selector 选项
+    var selectorOptions = [];
+    for (var s = 0; s < MOCK_TASK_STORE.length; s++) {
+      var t2 = MOCK_TASK_STORE[s];
+      var date = t2.start_time.split(" ")[0];
+      selectorOptions.push({ value: t2.id, label: t2.operation_name + " - " + date + " (" + t2.status + ")" });
+    }
+
     // Task Selector 预览
     html +=
       '<div class="band top-gap">' +
       '<h3>' + esc(t("task.selectorLabel")) + "</h3>" +
-      renderTaskSelector("", "") +
+      Components.renderSelector({
+        label: WorkOps.getLang() === "zh" ? "选择任务" : "Select Task",
+        placeholder: WorkOps.getLang() === "zh" ? "-- 请选择任务 --" : "-- Select a task --",
+        options: selectorOptions,
+        selectedValue: "",
+        onChange: ""
+      }) +
       "</div>";
 
     el.innerHTML = html;
@@ -225,7 +198,5 @@
   // ─── Public API（只暴露 3 个方法）────────────────────────
   window.TaskEngineModule = {
     render: renderTaskEngine,
-    renderTaskCard: renderTaskCard,
-    renderTaskSelector: renderTaskSelector,
   };
 })();

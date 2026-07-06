@@ -1,13 +1,19 @@
 /**
  * WorkOps Device Registry — 设备注册中心
  * Sprint003: Device Registry Foundation
- * Sprint007: 迁移到 Components（兼容层保留）
+ * Sprint008: 删除兼容层，直接调用 Components
  *
  * 独立模块，不依赖后端 API。
  * 通过 window.DeviceRegistryModule 暴露给 app.js。
  */
 (function () {
   "use strict";
+
+  // ─── 模块级安全检查 ────────────────────────────────────
+  if (!window.Components) {
+    console.error("Components library not loaded.");
+    return;
+  }
 
   // ─── Mock Device Store ──────────────────────────────────
   var MOCK_DEVICE_STORE = [
@@ -33,69 +39,6 @@
       .replace(/"/g, "&quot;");
   }
 
-  // ─── 兼容层：StatusBadge（转调 Components）──────────────
-  // 旧函数保留，内部转调 Components
-  // Sprint008 将删除此兼容层
-  function renderStatusBadge(status) {
-    if (window.Components && Components.renderStatusBadge) {
-      return Components.renderStatusBadge(status, "device");
-    }
-    // 降级方案（Components 未加载时）
-    return '<span class="status-badge">● ' + esc(status) + "</span>";
-  }
-
-  // ─── 兼容层：DeviceSelector（转调 Components）───────────
-  // 旧函数保留，内部转调 Components
-  // Sprint008 将删除此兼容层
-  function renderDeviceSelector(selectedId, onChangeFn) {
-    if (window.Components && Components.renderSelector) {
-      var isZh = WorkOps.getLang() === "zh";
-      var placeholder = isZh ? "-- 请选择设备 --" : "-- Select a device --";
-      var label = isZh ? "选择设备" : "Select Device";
-
-      var options = [];
-      for (var i = 0; i < MOCK_DEVICE_STORE.length; i++) {
-        var d = MOCK_DEVICE_STORE[i];
-        options.push({ value: d.id, label: d.name + " (" + d.ip + ")" });
-      }
-
-      return Components.renderSelector({
-        label: label,
-        placeholder: placeholder,
-        options: options,
-        selectedValue: selectedId,
-        onChange: onChangeFn
-      });
-    }
-    // 降级方案
-    return '<div class="device-selector">Selector unavailable</div>';
-  }
-
-  // ─── 兼容层：DeviceCard（转调 Components）────────────────
-  // 旧函数保留，内部转调 Components
-  // Sprint008 将删除此兼容层
-  function renderDeviceCard(device) {
-    if (window.Components && Components.renderCard) {
-      var typeLabel = t("devices.type." + device.type) || device.type;
-
-      var header =
-        '<span class="device-card-name">' + esc(device.name) + "</span>" +
-        renderStatusBadge(device.status);
-
-      var body =
-        '<div class="device-card-field"><span class="device-card-label">' + esc(t("devices.type")) + '</span><span class="device-card-value">' + esc(typeLabel) + "</span></div>" +
-        '<div class="device-card-field"><span class="device-card-label">' + esc(t("devices.ip")) + '</span><span class="device-card-value">' + esc(device.ip || "-") + "</span></div>";
-
-      return Components.renderCard({
-        header: header,
-        body: body,
-        dataAttributes: { "data-device-id": device.id }
-      });
-    }
-    // 降级方案
-    return '<div class="device-card">Card unavailable</div>';
-  }
-
   // ─── Main Render ────────────────────────────────────────
   function renderDeviceRegistry() {
     var el = document.getElementById("devices");
@@ -104,7 +47,25 @@
     var devices = MOCK_DEVICE_STORE;
     var cards = "";
     for (var i = 0; i < devices.length; i++) {
-      cards += renderDeviceCard(devices[i]);
+      var device = devices[i];
+      var typeLabel = t("devices.type." + device.type) || device.type;
+
+      cards += Components.renderCard({
+        header:
+          '<span class="device-card-name">' + esc(device.name) + "</span>" +
+          Components.renderStatusBadge(device.status, "device"),
+        body:
+          '<div class="device-card-field"><span class="device-card-label">' + esc(t("devices.type")) + '</span><span class="device-card-value">' + esc(typeLabel) + "</span></div>" +
+          '<div class="device-card-field"><span class="device-card-label">' + esc(t("devices.ip")) + '</span><span class="device-card-value">' + esc(device.ip || "-") + "</span></div>",
+        dataAttributes: { "data-device-id": device.id }
+      });
+    }
+
+    // Selector 选项
+    var selectorOptions = [];
+    for (var j = 0; j < MOCK_DEVICE_STORE.length; j++) {
+      var d = MOCK_DEVICE_STORE[j];
+      selectorOptions.push({ value: d.id, label: d.name + " (" + d.ip + ")" });
     }
 
     el.innerHTML =
@@ -121,15 +82,19 @@
       "</div>" +
       '<div class="band top-gap">' +
       '<h3>' + esc(t("registry.selectorLabel")) + "</h3>" +
-      renderDeviceSelector("", "") +
+      Components.renderSelector({
+        label: WorkOps.getLang() === "zh" ? "选择设备" : "Select Device",
+        placeholder: WorkOps.getLang() === "zh" ? "-- 请选择设备 --" : "-- Select a device --",
+        options: selectorOptions,
+        selectedValue: "",
+        onChange: ""
+      }) +
       "</div>";
   }
 
   // ─── Public API ─────────────────────────────────────────
   window.DeviceRegistryModule = {
     render: renderDeviceRegistry,
-    renderStatusBadge: renderStatusBadge,
-    renderDeviceSelector: renderDeviceSelector,
     getDevices: function () { return MOCK_DEVICE_STORE; },
   };
 })();

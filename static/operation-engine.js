@@ -1,7 +1,7 @@
 /**
  * WorkOps Operation Engine — 操作引擎
  * Sprint005: Operation Engine Foundation
- * Sprint007: 迁移到 Components（兼容层保留）
+ * Sprint008: 删除兼容层，直接调用 Components
  *
  * 独立模块，不依赖后端 API。
  * 不依赖 DeviceRegistryModule 或 ResourceRegistryModule。
@@ -10,6 +10,12 @@
  */
 (function () {
   "use strict";
+
+  // ─── 模块级安全检查 ────────────────────────────────────
+  if (!window.Components) {
+    console.error("Components library not loaded.");
+    return;
+  }
 
   // ─── Mock Operation Store（模块私有）────────────────────
   var MOCK_OPERATION_STORE = [
@@ -29,7 +35,7 @@
     { id: "op-007", name: "Data Migration", type: "migration", device_id: "550e8400-e29b-41d4-a716-446655440005", device_name: "PVE", resource_id: "r-009", resource_name: "Storage local-lvm", schedule: "manual", last_run: "-", status: "pending" },
   ];
 
-  // ─── Operation Type 定义 ────────────────────────────────
+  // ─── Operation Type 定义（Operation 特有，不迁移）───────
   var OPERATION_TYPES = {
     backup: { label_zh: "备份", label_en: "Backup", bg: "#dbeafe", fg: "#1e40af" },
     restore: { label_zh: "恢复", label_en: "Restore", bg: "#dcfce7", fg: "#15803d" },
@@ -52,17 +58,7 @@
       .replace(/"/g, "&quot;");
   }
 
-  // ─── 兼容层：StatusBadge（转调 Components）──────────────
-  // Sprint008 将删除此兼容层
-  function renderStatusBadge(status) {
-    if (window.Components && Components.renderStatusBadge) {
-      return Components.renderStatusBadge(status, "operation");
-    }
-    return '<span class="status-badge">● ' + esc(status) + "</span>";
-  }
-
-  // ─── OperationTypeBadge（保持内部实现，不迁移）──────────
-  // 这是 Operation Engine 特有的组件，不属于通用组件库
+  // ─── OperationTypeBadge（Operation 特有，不迁移）────────
   function renderOperationTypeBadge(type) {
     var def = OPERATION_TYPES[type] || { label_zh: type, label_en: type, bg: "#f3f4f6", fg: "#647084" };
     var isZh = WorkOps.getLang() === "zh";
@@ -74,7 +70,7 @@
     );
   }
 
-  // ─── Schedule Label ─────────────────────────────────────
+  // ─── Schedule Label（Operation 特有，不迁移）────────────
   var SCHEDULE_LABELS = {
     daily: { label_zh: "每天", label_en: "Daily" },
     weekly: { label_zh: "每周", label_en: "Weekly" },
@@ -86,55 +82,6 @@
     if (!def) return esc(schedule);
     var isZh = WorkOps.getLang() === "zh";
     return esc(isZh ? def.label_zh : def.label_en);
-  }
-
-  // ─── 兼容层：OperationSelector（转调 Components）────────
-  // Sprint008 将删除此兼容层
-  function renderOperationSelector(selectedId, onChangeFn) {
-    if (window.Components && Components.renderSelector) {
-      var isZh = WorkOps.getLang() === "zh";
-      var placeholder = isZh ? "-- 请选择操作 --" : "-- Select an operation --";
-      var label = isZh ? "选择操作" : "Select Operation";
-
-      var options = [];
-      for (var i = 0; i < MOCK_OPERATION_STORE.length; i++) {
-        var op = MOCK_OPERATION_STORE[i];
-        options.push({ value: op.id, label: op.name + " (" + op.device_name + ")" });
-      }
-
-      return Components.renderSelector({
-        label: label,
-        placeholder: placeholder,
-        options: options,
-        selectedValue: selectedId,
-        onChange: onChangeFn
-      });
-    }
-    return '<div class="operation-selector">Selector unavailable</div>';
-  }
-
-  // ─── 兼容层：OperationCard（转调 Components）────────────
-  // Sprint008 将删除此兼容层
-  function renderOperationCard(operation) {
-    if (window.Components && Components.renderCard) {
-      var header =
-        '<span class="operation-card-name">' + esc(operation.name) + "</span>" +
-        renderOperationTypeBadge(operation.type);
-
-      var body =
-        '<div class="operation-card-field"><span class="operation-card-label">' + esc(t("operation.device")) + '</span><span class="operation-card-value">' + esc(operation.device_name) + "</span></div>" +
-        '<div class="operation-card-field"><span class="operation-card-label">' + esc(t("operation.resource")) + '</span><span class="operation-card-value">' + esc(operation.resource_name) + "</span></div>" +
-        '<div class="operation-card-field"><span class="operation-card-label">' + esc(t("operation.schedule")) + '</span><span class="operation-card-value">' + renderScheduleLabel(operation.schedule) + "</span></div>" +
-        '<div class="operation-card-field"><span class="operation-card-label">' + esc(t("operation.lastRun")) + '</span><span class="operation-card-value">' + esc(operation.last_run) + "</span></div>" +
-        '<div class="operation-card-field"><span class="operation-card-label">' + esc(t("operation.status")) + '</span><span class="operation-card-value">' + renderStatusBadge(operation.status) + "</span></div>";
-
-      return Components.renderCard({
-        header: header,
-        body: body,
-        dataAttributes: { "data-operation-id": operation.id }
-      });
-    }
-    return '<div class="operation-card">Card unavailable</div>';
   }
 
   // ─── Group Operations by Device ─────────────────────────
@@ -180,7 +127,20 @@
         html += '<h3 class="operation-device-title">' + esc(deviceName) + "</h3>";
         html += '<div class="operation-card-grid">';
         for (var o = 0; o < deviceOps.length; o++) {
-          html += renderOperationCard(deviceOps[o]);
+          var operation = deviceOps[o];
+
+          html += Components.renderCard({
+            header:
+              '<span class="operation-card-name">' + esc(operation.name) + "</span>" +
+              renderOperationTypeBadge(operation.type),
+            body:
+              '<div class="operation-card-field"><span class="operation-card-label">' + esc(t("operation.device")) + '</span><span class="operation-card-value">' + esc(operation.device_name) + "</span></div>" +
+              '<div class="operation-card-field"><span class="operation-card-label">' + esc(t("operation.resource")) + '</span><span class="operation-card-value">' + esc(operation.resource_name) + "</span></div>" +
+              '<div class="operation-card-field"><span class="operation-card-label">' + esc(t("operation.schedule")) + '</span><span class="operation-card-value">' + renderScheduleLabel(operation.schedule) + "</span></div>" +
+              '<div class="operation-card-field"><span class="operation-card-label">' + esc(t("operation.lastRun")) + '</span><span class="operation-card-value">' + esc(operation.last_run) + "</span></div>" +
+              '<div class="operation-card-field"><span class="operation-card-label">' + esc(t("operation.status")) + '</span><span class="operation-card-value">' + Components.renderStatusBadge(operation.status, "operation") + "</span></div>",
+            dataAttributes: { "data-operation-id": operation.id }
+          });
         }
         html += "</div></div>";
       }
@@ -188,11 +148,24 @@
 
     html += "</div>";
 
+    // Selector 选项
+    var selectorOptions = [];
+    for (var s = 0; s < MOCK_OPERATION_STORE.length; s++) {
+      var op = MOCK_OPERATION_STORE[s];
+      selectorOptions.push({ value: op.id, label: op.name + " (" + op.device_name + ")" });
+    }
+
     // Operation Selector 预览
     html +=
       '<div class="band top-gap">' +
       '<h3>' + esc(t("operation.selectorLabel")) + "</h3>" +
-      renderOperationSelector("", "") +
+      Components.renderSelector({
+        label: WorkOps.getLang() === "zh" ? "选择操作" : "Select Operation",
+        placeholder: WorkOps.getLang() === "zh" ? "-- 请选择操作 --" : "-- Select an operation --",
+        options: selectorOptions,
+        selectedValue: "",
+        onChange: ""
+      }) +
       "</div>";
 
     el.innerHTML = html;
@@ -201,7 +174,5 @@
   // ─── Public API（只暴露 3 个方法）────────────────────────
   window.OperationEngineModule = {
     render: renderOperationEngine,
-    renderOperationCard: renderOperationCard,
-    renderOperationSelector: renderOperationSelector,
   };
 })();

@@ -1,7 +1,7 @@
 /**
  * WorkOps Resource Registry — 资源注册中心
  * Sprint004: Resource Registry Foundation
- * Sprint007: 迁移到 Components（兼容层保留）
+ * Sprint008: 删除兼容层，直接调用 Components
  *
  * 独立模块，不依赖后端 API。
  * 不依赖 DeviceRegistryModule（避免跨模块 UI 依赖）。
@@ -9,6 +9,12 @@
  */
 (function () {
   "use strict";
+
+  // ─── 模块级安全检查 ────────────────────────────────────
+  if (!window.Components) {
+    console.error("Components library not loaded.");
+    return;
+  }
 
   // ─── Mock Resource Store ────────────────────────────────
   var MOCK_RESOURCE_STORE = [
@@ -43,67 +49,6 @@
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;");
-  }
-
-  // ─── 兼容层：StatusBadge（转调 Components）──────────────
-  // Sprint008 将删除此兼容层
-  function renderStatusBadge(status) {
-    if (window.Components && Components.renderStatusBadge) {
-      return Components.renderStatusBadge(status, "resource");
-    }
-    return '<span class="status-badge">● ' + esc(status) + "</span>";
-  }
-
-  // ─── 兼容层：ResourceSelector（转调 Components）─────────
-  // Sprint008 将删除此兼容层
-  function renderResourceSelector(selectedId, onChangeFn) {
-    if (window.Components && Components.renderSelector) {
-      var isZh = WorkOps.getLang() === "zh";
-      var placeholder = isZh ? "-- 请选择资源 --" : "-- Select a resource --";
-      var label = isZh ? "选择资源" : "Select Resource";
-
-      var options = [];
-      for (var i = 0; i < MOCK_RESOURCE_STORE.length; i++) {
-        var r = MOCK_RESOURCE_STORE[i];
-        options.push({ value: r.id, label: r.name + " (" + r.device_name + ")" });
-      }
-
-      return Components.renderSelector({
-        label: label,
-        placeholder: placeholder,
-        options: options,
-        selectedValue: selectedId,
-        onChange: onChangeFn
-      });
-    }
-    return '<div class="resource-selector">Selector unavailable</div>';
-  }
-
-  // ─── 兼容层：ResourceCard（转调 Components）──────────────
-  // Sprint008 将删除此兼容层
-  function renderResourceCard(resource) {
-    if (window.Components && Components.renderCard) {
-      var typeLabel = t("resource.type." + resource.type) || resource.type;
-      var capacityText = resource.size_total !== "-"
-        ? esc(resource.size_used) + " / " + esc(resource.size_total)
-        : "-";
-
-      var header =
-        '<span class="resource-card-name">' + esc(resource.name) + "</span>" +
-        renderStatusBadge(resource.status);
-
-      var body =
-        '<div class="resource-card-field"><span class="resource-card-label">' + esc(t("resource.type")) + '</span><span class="resource-card-value">' + esc(typeLabel) + "</span></div>" +
-        '<div class="resource-card-field"><span class="resource-card-label">' + esc(t("resource.path")) + '</span><span class="resource-card-value">' + esc(resource.path) + "</span></div>" +
-        '<div class="resource-card-field"><span class="resource-card-label">' + esc(t("resource.capacity")) + '</span><span class="resource-card-value">' + capacityText + "</span></div>";
-
-      return Components.renderCard({
-        header: header,
-        body: body,
-        dataAttributes: { "data-device-id": resource.device_id }
-      });
-    }
-    return '<div class="resource-card">Card unavailable</div>';
   }
 
   // ─── Group Resources by Device ──────────────────────────
@@ -149,7 +94,22 @@
         html += '<h3 class="resource-device-title">' + esc(deviceName) + "</h3>";
         html += '<div class="resource-card-grid">';
         for (var r = 0; r < deviceResources.length; r++) {
-          html += renderResourceCard(deviceResources[r]);
+          var resource = deviceResources[r];
+          var typeLabel = t("resource.type." + resource.type) || resource.type;
+          var capacityText = resource.size_total !== "-"
+            ? esc(resource.size_used) + " / " + esc(resource.size_total)
+            : "-";
+
+          html += Components.renderCard({
+            header:
+              '<span class="resource-card-name">' + esc(resource.name) + "</span>" +
+              Components.renderStatusBadge(resource.status, "resource"),
+            body:
+              '<div class="resource-card-field"><span class="resource-card-label">' + esc(t("resource.type")) + '</span><span class="resource-card-value">' + esc(typeLabel) + "</span></div>" +
+              '<div class="resource-card-field"><span class="resource-card-label">' + esc(t("resource.path")) + '</span><span class="resource-card-value">' + esc(resource.path) + "</span></div>" +
+              '<div class="resource-card-field"><span class="resource-card-label">' + esc(t("resource.capacity")) + '</span><span class="resource-card-value">' + capacityText + "</span></div>",
+            dataAttributes: { "data-device-id": resource.device_id }
+          });
         }
         html += "</div></div>";
       }
@@ -157,11 +117,24 @@
 
     html += "</div>";
 
+    // Selector 选项
+    var selectorOptions = [];
+    for (var s = 0; s < MOCK_RESOURCE_STORE.length; s++) {
+      var res = MOCK_RESOURCE_STORE[s];
+      selectorOptions.push({ value: res.id, label: res.name + " (" + res.device_name + ")" });
+    }
+
     // Resource Selector 预览
     html +=
       '<div class="band top-gap">' +
       '<h3>' + esc(t("resource.selectorLabel")) + "</h3>" +
-      renderResourceSelector("", "") +
+      Components.renderSelector({
+        label: WorkOps.getLang() === "zh" ? "选择资源" : "Select Resource",
+        placeholder: WorkOps.getLang() === "zh" ? "-- 请选择资源 --" : "-- Select a resource --",
+        options: selectorOptions,
+        selectedValue: "",
+        onChange: ""
+      }) +
       "</div>";
 
     el.innerHTML = html;
@@ -170,8 +143,6 @@
   // ─── Public API ─────────────────────────────────────────
   window.ResourceRegistryModule = {
     render: renderResourceRegistry,
-    renderResourceCard: renderResourceCard,
-    renderResourceSelector: renderResourceSelector,
     getResources: function () { return MOCK_RESOURCE_STORE; },
   };
 })();
