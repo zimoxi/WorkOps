@@ -1,0 +1,113 @@
+/* ── WorkOps Component Library Styles ──────────────────
+ * Sprint007: Component Library Foundation
+ *
+ * 所有组件样式统一放在此文件中。
+ * 使用 .components- 命名空间避免样式冲突。
+ */
+
+/* StatusBadge */
+.components-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Card */
+.components-card {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.15s;
+}
+
+.components-card:hover {
+  box-shadow: 0 8px 24px rgba(22, 32, 51, 0.12);
+}
+
+.components-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.components-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.components-card-footer {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+/* Selector */
+.components-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 320px;
+}
+
+.components-selector-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.components-selector-select {
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 14px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.components-selector-select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+/* Loading */
+.components-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+}
+
+.components-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--line);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: components-spin 1s linear infinite;
+}
+
+@keyframes components-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* EmptyState */
+.components-empty-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+}
+
+.components-empty-state-message {
+  color: var(--muted);
+  font-size: 14px;
+}

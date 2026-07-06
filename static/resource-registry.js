@@ -1,6 +1,7 @@
 /**
  * WorkOps Resource Registry — 资源注册中心
  * Sprint004: Resource Registry Foundation
+ * Sprint007: 迁移到 Components（兼容层保留）
  *
  * 独立模块，不依赖后端 API。
  * 不依赖 DeviceRegistryModule（避免跨模块 UI 依赖）。
@@ -10,7 +11,6 @@
   "use strict";
 
   // ─── Mock Resource Store ────────────────────────────────
-  // device_name 直接写在 Mock 数据中，避免依赖 DeviceRegistryModule
   var MOCK_RESOURCE_STORE = [
     // Windows-PC 的资源
     { id: "r-001", device_id: "550e8400-e29b-41d4-a716-446655440001", device_name: "Windows-PC", name: "Disk C", type: "disk", path: "C:\\", mount_point: "C:\\", size_total: "512GB", size_used: "320GB", status: "online" },
@@ -45,68 +45,65 @@
       .replace(/"/g, "&quot;");
   }
 
-  // ─── StatusBadge（独立实现，不依赖 DeviceRegistryModule）──
-  var STATUS_COLORS = {
-    online: { bg: "#dcfce7", fg: "#15803d", label_zh: "在线", label_en: "Online" },
-    offline: { bg: "#fee2e2", fg: "#b91c1c", label_zh: "离线", label_en: "Offline" },
-    warning: { bg: "#fef3c7", fg: "#b45309", label_zh: "警告", label_en: "Warning" },
-    unknown: { bg: "#f3f4f6", fg: "#647084", label_zh: "未知", label_en: "Unknown" },
-  };
-
+  // ─── 兼容层：StatusBadge（转调 Components）──────────────
+  // Sprint008 将删除此兼容层
   function renderStatusBadge(status) {
-    var s = STATUS_COLORS[status] || STATUS_COLORS.unknown;
-    var isZh = WorkOps.getLang() === "zh";
-    var label = isZh ? s.label_zh : s.label_en;
-    return (
-      '<span class="status-badge" style="background:' + s.bg + ";color:" + s.fg + '">' +
-      "● " + esc(label) +
-      "</span>"
-    );
-  }
-
-  // ─── Resource Selector Component ────────────────────────
-  function renderResourceSelector(selectedId, onChangeFn) {
-    var isZh = WorkOps.getLang() === "zh";
-    var placeholder = isZh ? "-- 请选择资源 --" : "-- Select a resource --";
-    var label = isZh ? "选择资源" : "Select Resource";
-
-    var options = '<option value="">' + esc(placeholder) + "</option>";
-    for (var i = 0; i < MOCK_RESOURCE_STORE.length; i++) {
-      var r = MOCK_RESOURCE_STORE[i];
-      var selected = r.id === selectedId ? " selected" : "";
-      var display = r.name + " (" + r.device_name + ")";
-      options += '<option value="' + esc(r.id) + '"' + selected + ">" + esc(display) + "</option>";
+    if (window.Components && Components.renderStatusBadge) {
+      return Components.renderStatusBadge(status, "resource");
     }
-
-    var onchange = onChangeFn ? ' onchange="' + esc(onChangeFn) + '(this.value)"' : "";
-    return (
-      '<div class="resource-selector">' +
-      '<label class="resource-selector-label">' + esc(label) + "</label>" +
-      '<select class="resource-selector-select"' + onchange + ">" + options + "</select>" +
-      "</div>"
-    );
+    return '<span class="status-badge">● ' + esc(status) + "</span>";
   }
 
-  // ─── Resource Card ──────────────────────────────────────
-  function renderResourceCard(resource) {
-    var typeLabel = t("resource.type." + resource.type) || resource.type;
-    var capacityText = resource.size_total !== "-"
-      ? esc(resource.size_used) + " / " + esc(resource.size_total)
-      : "-";
+  // ─── 兼容层：ResourceSelector（转调 Components）─────────
+  // Sprint008 将删除此兼容层
+  function renderResourceSelector(selectedId, onChangeFn) {
+    if (window.Components && Components.renderSelector) {
+      var isZh = WorkOps.getLang() === "zh";
+      var placeholder = isZh ? "-- 请选择资源 --" : "-- Select a resource --";
+      var label = isZh ? "选择资源" : "Select Resource";
 
-    return (
-      '<div class="resource-card">' +
-      '<div class="resource-card-header">' +
-      '<span class="resource-card-name">' + esc(resource.name) + "</span>" +
-      renderStatusBadge(resource.status) +
-      "</div>" +
-      '<div class="resource-card-body">' +
-      '<div class="resource-card-field"><span class="resource-card-label">' + esc(t("resource.type")) + '</span><span class="resource-card-value">' + esc(typeLabel) + "</span></div>" +
-      '<div class="resource-card-field"><span class="resource-card-label">' + esc(t("resource.path")) + '</span><span class="resource-card-value">' + esc(resource.path) + "</span></div>" +
-      '<div class="resource-card-field"><span class="resource-card-label">' + esc(t("resource.capacity")) + '</span><span class="resource-card-value">' + capacityText + "</span></div>" +
-      "</div>" +
-      "</div>"
-    );
+      var options = [];
+      for (var i = 0; i < MOCK_RESOURCE_STORE.length; i++) {
+        var r = MOCK_RESOURCE_STORE[i];
+        options.push({ value: r.id, label: r.name + " (" + r.device_name + ")" });
+      }
+
+      return Components.renderSelector({
+        label: label,
+        placeholder: placeholder,
+        options: options,
+        selectedValue: selectedId,
+        onChange: onChangeFn
+      });
+    }
+    return '<div class="resource-selector">Selector unavailable</div>';
+  }
+
+  // ─── 兼容层：ResourceCard（转调 Components）──────────────
+  // Sprint008 将删除此兼容层
+  function renderResourceCard(resource) {
+    if (window.Components && Components.renderCard) {
+      var typeLabel = t("resource.type." + resource.type) || resource.type;
+      var capacityText = resource.size_total !== "-"
+        ? esc(resource.size_used) + " / " + esc(resource.size_total)
+        : "-";
+
+      var header =
+        '<span class="resource-card-name">' + esc(resource.name) + "</span>" +
+        renderStatusBadge(resource.status);
+
+      var body =
+        '<div class="resource-card-field"><span class="resource-card-label">' + esc(t("resource.type")) + '</span><span class="resource-card-value">' + esc(typeLabel) + "</span></div>" +
+        '<div class="resource-card-field"><span class="resource-card-label">' + esc(t("resource.path")) + '</span><span class="resource-card-value">' + esc(resource.path) + "</span></div>" +
+        '<div class="resource-card-field"><span class="resource-card-label">' + esc(t("resource.capacity")) + '</span><span class="resource-card-value">' + capacityText + "</span></div>";
+
+      return Components.renderCard({
+        header: header,
+        body: body,
+        dataAttributes: { "data-device-id": resource.device_id }
+      });
+    }
+    return '<div class="resource-card">Card unavailable</div>';
   }
 
   // ─── Group Resources by Device ──────────────────────────

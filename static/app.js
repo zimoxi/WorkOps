@@ -794,6 +794,7 @@ function render() {
   if (window.DeviceRegistryModule) DeviceRegistryModule.render();
   if (window.ResourceRegistryModule) ResourceRegistryModule.render();
   if (window.OperationEngineModule) OperationEngineModule.render();
+  if (window.TaskEngineModule) TaskEngineModule.render();
   renderOverview();
   renderStorage();
   renderRestore();

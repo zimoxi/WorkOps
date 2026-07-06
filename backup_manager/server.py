@@ -1082,6 +1082,7 @@ INDEX_HTML = """<!doctype html>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>WorkOps</title>
   <link rel="stylesheet" href="/static/styles.css">
+  <link rel="stylesheet" href="/static/components/styles.css">
 </head>
 <body>
   <button id="menuToggle" class="menu-toggle" onclick="toggleMenu()">☰</button>
@@ -1100,6 +1101,7 @@ INDEX_HTML = """<!doctype html>
     <button data-page="devices" class="nav" data-i18n="nav.devices">设备</button>
     <button data-page="resources" class="nav" data-i18n="nav.resources">资源</button>
     <button data-page="operations" class="nav" data-i18n="nav.operations">操作</button>
+    <button data-page="tasks" class="nav" data-i18n="nav.tasks">任务</button>
     <button data-page="storage" class="nav" data-i18n="nav.storage">连接与存储</button>
     <button data-page="restore" class="nav" data-i18n="nav.restore">恢复中心</button>
     <button data-page="nas" class="nav" data-i18n="nav.nas">NAS / Restic</button>
@@ -1115,6 +1117,7 @@ INDEX_HTML = """<!doctype html>
     <section id="devices" class="page"></section>
     <section id="resources" class="page"></section>
     <section id="operations" class="page"></section>
+    <section id="tasks" class="page"></section>
     <section id="storage" class="page"></section>
     <section id="restore" class="page"></section>
     <section id="nas" class="page"></section>
@@ -1153,10 +1156,12 @@ INDEX_HTML = """<!doctype html>
   </dialog>
   <script src="/static/i18n.js"></script>
   <script src="/static/workflow.js"></script>
+  <script src="/static/components/index.js"></script>
   <script src="/static/workspace.js"></script>
   <script src="/static/device-registry.js"></script>
   <script src="/static/resource-registry.js"></script>
   <script src="/static/operation-engine.js"></script>
+  <script src="/static/task-engine.js"></script>
   <script src="/static/app.js"></script>
 </body>
 </html>

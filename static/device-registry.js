@@ -1,6 +1,7 @@
 /**
  * WorkOps Device Registry — 设备注册中心
  * Sprint003: Device Registry Foundation
+ * Sprint007: 迁移到 Components（兼容层保留）
  *
  * 独立模块，不依赖后端 API。
  * 通过 window.DeviceRegistryModule 暴露给 app.js。
@@ -32,62 +33,67 @@
       .replace(/"/g, "&quot;");
   }
 
-  // ─── StatusBadge Component ──────────────────────────────
-  var STATUS_COLORS = {
-    online: { bg: "#dcfce7", fg: "#15803d", label_zh: "在线", label_en: "Online" },
-    offline: { bg: "#fee2e2", fg: "#b91c1c", label_zh: "离线", label_en: "Offline" },
-    warning: { bg: "#fef3c7", fg: "#b45309", label_zh: "警告", label_en: "Warning" },
-    unknown: { bg: "#f3f4f6", fg: "#647084", label_zh: "未知", label_en: "Unknown" },
-  };
-
+  // ─── 兼容层：StatusBadge（转调 Components）──────────────
+  // 旧函数保留，内部转调 Components
+  // Sprint008 将删除此兼容层
   function renderStatusBadge(status) {
-    var s = STATUS_COLORS[status] || STATUS_COLORS.unknown;
-    var isZh = WorkOps.getLang() === "zh";
-    var label = isZh ? s.label_zh : s.label_en;
-    return (
-      '<span class="status-badge" style="background:' + s.bg + ";color:" + s.fg + '">' +
-      "● " + esc(label) +
-      "</span>"
-    );
-  }
-
-  // ─── DeviceSelector Component ───────────────────────────
-  function renderDeviceSelector(selectedId, onChangeFn) {
-    var isZh = WorkOps.getLang() === "zh";
-    var placeholder = isZh ? "-- 请选择设备 --" : "-- Select a device --";
-    var label = isZh ? "选择设备" : "Select Device";
-
-    var options = '<option value="">' + esc(placeholder) + "</option>";
-    for (var i = 0; i < MOCK_DEVICE_STORE.length; i++) {
-      var d = MOCK_DEVICE_STORE[i];
-      var selected = d.id === selectedId ? " selected" : "";
-      options += '<option value="' + esc(d.id) + '"' + selected + ">" + esc(d.name) + " (" + esc(d.ip) + ")</option>";
+    if (window.Components && Components.renderStatusBadge) {
+      return Components.renderStatusBadge(status, "device");
     }
-
-    var onchange = onChangeFn ? ' onchange="' + esc(onChangeFn) + '(this.value)"' : "";
-    return (
-      '<div class="device-selector">' +
-      '<label class="device-selector-label">' + esc(label) + "</label>" +
-      '<select class="device-selector-select"' + onchange + ">" + options + "</select>" +
-      "</div>"
-    );
+    // 降级方案（Components 未加载时）
+    return '<span class="status-badge">● ' + esc(status) + "</span>";
   }
 
-  // ─── Device Card ────────────────────────────────────────
+  // ─── 兼容层：DeviceSelector（转调 Components）───────────
+  // 旧函数保留，内部转调 Components
+  // Sprint008 将删除此兼容层
+  function renderDeviceSelector(selectedId, onChangeFn) {
+    if (window.Components && Components.renderSelector) {
+      var isZh = WorkOps.getLang() === "zh";
+      var placeholder = isZh ? "-- 请选择设备 --" : "-- Select a device --";
+      var label = isZh ? "选择设备" : "Select Device";
+
+      var options = [];
+      for (var i = 0; i < MOCK_DEVICE_STORE.length; i++) {
+        var d = MOCK_DEVICE_STORE[i];
+        options.push({ value: d.id, label: d.name + " (" + d.ip + ")" });
+      }
+
+      return Components.renderSelector({
+        label: label,
+        placeholder: placeholder,
+        options: options,
+        selectedValue: selectedId,
+        onChange: onChangeFn
+      });
+    }
+    // 降级方案
+    return '<div class="device-selector">Selector unavailable</div>';
+  }
+
+  // ─── 兼容层：DeviceCard（转调 Components）────────────────
+  // 旧函数保留，内部转调 Components
+  // Sprint008 将删除此兼容层
   function renderDeviceCard(device) {
-    var typeLabel = t("devices.type." + device.type) || device.type;
-    return (
-      '<div class="device-card">' +
-      '<div class="device-card-header">' +
-      '<span class="device-card-name">' + esc(device.name) + "</span>" +
-      renderStatusBadge(device.status) +
-      "</div>" +
-      '<div class="device-card-body">' +
-      '<div class="device-card-field"><span class="device-card-label">' + esc(t("devices.type")) + '</span><span class="device-card-value">' + esc(typeLabel) + "</span></div>" +
-      '<div class="device-card-field"><span class="device-card-label">' + esc(t("devices.ip")) + '</span><span class="device-card-value">' + esc(device.ip || "-") + "</span></div>" +
-      "</div>" +
-      "</div>"
-    );
+    if (window.Components && Components.renderCard) {
+      var typeLabel = t("devices.type." + device.type) || device.type;
+
+      var header =
+        '<span class="device-card-name">' + esc(device.name) + "</span>" +
+        renderStatusBadge(device.status);
+
+      var body =
+        '<div class="device-card-field"><span class="device-card-label">' + esc(t("devices.type")) + '</span><span class="device-card-value">' + esc(typeLabel) + "</span></div>" +
+        '<div class="device-card-field"><span class="device-card-label">' + esc(t("devices.ip")) + '</span><span class="device-card-value">' + esc(device.ip || "-") + "</span></div>";
+
+      return Components.renderCard({
+        header: header,
+        body: body,
+        dataAttributes: { "data-device-id": device.id }
+      });
+    }
+    // 降级方案
+    return '<div class="device-card">Card unavailable</div>';
   }
 
   // ─── Main Render ────────────────────────────────────────

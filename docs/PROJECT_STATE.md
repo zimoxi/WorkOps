@@ -2,7 +2,7 @@
 
 
 
-Version: 0.4.0
+Version: 0.6.0
 
 
 
@@ -34,7 +34,7 @@ Current Release:
 
 
 
-v0.3.0-device-registry
+v0.6.0-task-engine
 
 
 
@@ -66,7 +66,7 @@ Current Sprint:
 
 
 
-Sprint005 - Operation Engine Foundation
+Sprint007 - Component Library Foundation
 
 
 
@@ -233,6 +233,10 @@ Architecture Decision Required
 
 
 ✅ Resource Registry Foundation
+
+✅ Operation Engine Foundation
+
+✅ Task Engine Foundation
 
 
 
@@ -466,6 +470,18 @@ PASS
 
 
 
+Sprint005
+
+
+
+PASS
+
+
+
+Sprint006
+
+PASS
+
 Planning
 
 
@@ -665,6 +681,30 @@ Priority:
 
 
 High
+
+
+
+\---
+
+
+
+\## TD-010
+
+
+
+\---
+
+
+
+\## TD-011
+
+
+
+\---
+
+
+
+\## TD-012
 
 
 
@@ -882,3 +922,70 @@ PROJECT\_STATE.md 是整个 WorkOps 项目的唯一状态文件。
 
 \- Current Priority
 
+
+
+---
+
+## TD-013
+
+StatusBadge 在 4 个模块中重复实现
+
+device-registry.js
+
+resource-registry.js
+
+operation-engine.js
+
+task-engine.js
+
+符合 COMPONENT_GUIDELINES.md 抽取条件（≥3 次）
+
+建议：
+
+Sprint007 抽取到 static/components/status-badge.js
+
+Priority:
+
+High
+
+---
+
+## TD-014
+
+Card 样式 4 次重复
+
+.device-card
+
+.resource-card
+
+.operation-card
+
+.task-card
+
+建议：
+
+统一为 .registry-card
+
+Priority:
+
+High
+
+---
+
+## TD-015
+
+Timeline 组件
+
+当前在 task-engine.js 中简单实现
+
+未来用于 Notification / Audit / History / Dashboard
+
+建议：
+
+统一抽取到 static/components/timeline.js
+
+Priority:
+
+Medium
+
+---

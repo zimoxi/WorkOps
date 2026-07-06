@@ -1949,3 +1949,148 @@ button.danger.compact {
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Task Engine (Sprint006) ─────────────────────────── */
+.task-operation-group {
+  margin-bottom: 20px;
+}
+
+.task-operation-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  margin: 0 0 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+}
+
+.task-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.task-card {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.15s;
+}
+
+.task-card:hover {
+  box-shadow: 0 8px 24px rgba(22, 32, 51, 0.12);
+}
+
+.task-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.task-card-name {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.task-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.task-card-field {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.task-card-label {
+  color: var(--muted);
+}
+
+.task-card-value {
+  font-weight: 500;
+}
+
+/* Task Timeline（简单列表，无动画/特殊效果）*/
+.task-timeline {
+  margin-bottom: 20px;
+}
+
+.task-timeline-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--muted);
+  margin: 0 0 12px;
+}
+
+.task-timeline-list {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.task-timeline-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.task-timeline-item:last-child {
+  border-bottom: none;
+}
+
+.task-timeline-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.task-timeline-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.task-timeline-meta {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Task Selector */
+.task-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 320px;
+}
+
+.task-selector-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.task-selector-select {
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 14px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.task-selector-select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+/* Responsive: Task Engine */
+@media (max-width: 767px) {
+  .task-card-grid {
+    grid-template-columns: 1fr;
+  }
+}
