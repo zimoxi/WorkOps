@@ -1639,3 +1639,202 @@ button.danger.compact {
     display: none;
   }
 }
+
+/* ── Device Registry (Sprint003) ─────────────────────── */
+.device-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.device-card {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.15s;
+}
+
+.device-card:hover {
+  box-shadow: 0 8px 24px rgba(22, 32, 51, 0.12);
+}
+
+.device-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.device-card-name {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.device-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.device-card-field {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.device-card-label {
+  color: var(--muted);
+}
+
+.device-card-value {
+  font-weight: 500;
+}
+
+/* Status Badge */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Device Selector */
+.device-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 320px;
+}
+
+.device-selector-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.device-selector-select {
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 14px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.device-selector-select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+/* Responsive: Device Registry */
+@media (max-width: 767px) {
+  .device-card-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Resource Registry (Sprint004) ───────────────────── */
+.resource-device-group {
+  margin-bottom: 20px;
+}
+
+.resource-device-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  margin: 0 0 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+}
+
+.resource-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.resource-card {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.15s;
+}
+
+.resource-card:hover {
+  box-shadow: 0 8px 24px rgba(22, 32, 51, 0.12);
+}
+
+.resource-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.resource-card-name {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.resource-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.resource-card-field {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.resource-card-label {
+  color: var(--muted);
+}
+
+.resource-card-value {
+  font-weight: 500;
+}
+
+/* Resource Selector */
+.resource-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 320px;
+}
+
+.resource-selector-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.resource-selector-select {
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 14px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.resource-selector-select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+/* Responsive: Resource Registry */
+@media (max-width: 767px) {
+  .resource-card-grid {
+    grid-template-columns: 1fr;
+  }
+}

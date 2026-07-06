@@ -2,7 +2,7 @@
 
 
 
-Version: 0.2.0
+Version: 0.4.0
 
 
 
@@ -18,19 +18,103 @@ Last Updated: 2026-07-04
 
 
 
+\# Project Baseline
+
+
+
+Foundation Baseline:
+
+
+
+v0.2.0-foundation
+
+
+
+Current Release:
+
+
+
+v0.3.0-device-registry
+
+
+
+\---
+
+
+
 \# Current Stage
 
 
 
-Current Phase: Foundation
+Current Phase:
 
 
 
-Current Sprint: Sprint003 - Device Registry Foundation
+Foundation
 
 
 
-Current Status: Planning
+Current Sprint:
+
+
+
+Sprint005 - Operation Engine Foundation
+
+
+
+Current Status:
+
+
+
+Planning
+
+
+
+\---
+
+
+
+\# Product Vision
+
+
+
+WorkOps 是统一基础设施运维平台（Unified Infrastructure Operations Platform）。
+
+
+
+目标：
+
+
+
+一个 Web 控制台统一管理：
+
+
+
+\- Windows
+
+\- Linux
+
+\- NAS
+
+\- OMV
+
+\- PVE
+
+\- PBS
+
+\- Docker
+
+\- Backup
+
+\- Restore
+
+\- Monitoring
+
+\- Remote
+
+\- Automation
+
+\- AI Assistant
 
 
 
@@ -42,15 +126,27 @@ Current Status: Planning
 
 
 
-Architecture Status: Frozen
+Architecture Status:
 
 
 
-Current Architecture Version: 1.1
+Frozen
 
 
 
-Current Data Model Version: 1.0
+Current Architecture Version:
+
+
+
+1.1
+
+
+
+Current Data Model Version:
+
+
+
+1.0
 
 
 
@@ -74,11 +170,13 @@ Device 是唯一 Root Entity。
 
 
 
-禁止修改 Architecture。
+禁止修改：
 
 
 
-禁止修改 Data Model。
+\- Architecture
+
+\- Data Model
 
 
 
@@ -118,11 +216,15 @@ Architecture Decision Required
 
 
 
-✅ Sprint001 (Branding + i18n)
+✅ Workspace Foundation
 
 
 
-✅ Sprint002 (Workspace Foundation)
+✅ Device Registry Foundation
+
+
+
+✅ Resource Registry Foundation
 
 
 
@@ -134,7 +236,15 @@ Architecture Decision Required
 
 
 
-Sprint003
+Sprint004
+
+
+
+名称：
+
+
+
+Resource Registry Foundation
 
 
 
@@ -142,7 +252,7 @@ Sprint003
 
 
 
-建立 Device Registry。
+建立统一 Resource Registry。
 
 
 
@@ -150,13 +260,13 @@ Sprint003
 
 
 
-\- Device Registry 页面
+\- Resource Registry 页面
 
-\- Device Selector
+\- Resource Card
 
-\- Status Badge
+\- Resource Selector
 
-\- Mock Device Store
+\- Mock Resource Store
 
 
 
@@ -176,95 +286,11 @@ Sprint003
 
 
 
-Sprint004
+Sprint005
 
 
 
-Resource Registry Foundation
-
-
-
-\---
-
-
-
-\# Technical Debt
-
-
-
-TD-001
-
-
-
-server.py
-
-
-
-INDEX\_HTML 仍然较大。
-
-
-
-建议：
-
-
-
-后续拆分模板。
-
-
-
-Priority: Medium
-
-
-
-\---
-
-
-
-TD-002
-
-
-
-static/app.js
-
-
-
-文件仍然较大。
-
-
-
-建议：
-
-
-
-逐 Sprint 拆分模块。
-
-
-
-Priority: High
-
-
-
-\---
-
-
-
-TD-003
-
-
-
-Mock Data
-
-
-
-目前写死在前端。
-
-
-
-未来迁移至统一 Device Store。
-
-
-
-Priority: Low
+Operation Engine Foundation
 
 
 
@@ -276,9 +302,13 @@ Priority: Low
 
 
 
-必须保持兼容：
+当前模块：
 
 
+
+\- Workspace
+
+\- Device Registry
 
 \- Backup
 
@@ -296,7 +326,7 @@ Priority: Low
 
 
 
-不得破坏。
+所有模块必须保持兼容。
 
 
 
@@ -316,7 +346,7 @@ Priority: Low
 
 
 
-遵循：
+开发必须遵循：
 
 
 
@@ -334,6 +364,8 @@ AI\_GUARD.md
 
 \- Backward Compatible
 
+\- One Sprint At A Time
+
 
 
 禁止：
@@ -346,17 +378,21 @@ AI\_GUARD.md
 
 \- Cross Sprint Development
 
+\- 修改 Architecture
+
+\- 修改 Data Model
+
 
 
 \---
 
 
 
-\# Before Coding
+\# AI Workflow
 
 
 
-AI 必须：
+AI 工作流程：
 
 
 
@@ -368,11 +404,17 @@ AI 必须：
 
 4\. 输出 Implementation Plan
 
-5\. 等待确认
+5\. 等待 Review
+
+6\. Coding
+
+7\. Sprint Review
+
+8\. 更新 PROJECT\_STATE.md
 
 
 
-不得直接开始 Coding。
+不得跳步骤。
 
 
 
@@ -384,15 +426,236 @@ AI 必须：
 
 
 
-Sprint001: PASS
+Sprint001
 
 
 
-Sprint002: PASS
+PASS
 
 
 
-Sprint003: Planning
+Sprint002
+
+
+
+PASS
+
+
+
+Sprint003
+
+
+
+PASS WITH NOTES
+
+
+
+Sprint004
+
+
+
+PASS
+
+
+Planning
+
+
+
+\---
+
+
+
+\# Technical Debt
+
+
+
+\## TD-001
+
+
+
+server.py
+
+
+
+INDEX\_HTML 仍然较大。
+
+
+
+建议：
+
+
+
+后续拆分模板。
+
+
+
+Priority:
+
+
+
+Medium
+
+
+
+\---
+
+
+
+\## TD-002
+
+
+
+static/app.js
+
+
+
+文件仍然较大。
+
+
+
+建议：
+
+
+
+逐 Sprint 模块化。
+
+
+
+Priority:
+
+
+
+High
+
+
+
+\---
+
+
+
+\## TD-003
+
+
+
+Mock Data
+
+
+
+目前仍然分散。
+
+
+
+未来统一迁移至 Device Store / Resource Store。
+
+
+
+Priority:
+
+
+
+Medium
+
+
+
+\---
+
+
+
+\## TD-004
+
+
+
+renderDevices()
+
+
+
+旧 Device CRUD 保留但未使用。
+
+
+
+未来决定：
+
+
+
+\- 删除
+
+\- 恢复
+
+\- 整合
+
+
+
+Priority:
+
+
+
+Low
+
+
+
+\---
+
+
+
+\## TD-005
+
+
+
+workspace.js 与 device-registry.js
+
+
+
+分别维护 Mock 数据。
+
+
+
+未来建立统一 Store。
+
+
+
+Priority:
+
+
+
+Medium
+
+
+
+\---
+
+
+
+\## TD-006
+
+
+
+DeviceSelector
+
+
+
+目前仅演示。
+
+
+
+未来接入：
+
+
+
+\- Backup
+
+\- Restore
+
+\- Cloud
+
+\- Operation
+
+
+
+Priority:
+
+
+
+High
 
 
 
@@ -404,13 +667,209 @@ Sprint003: Planning
 
 
 
-1\. Device Registry
+1\. Resource Registry
 
-2\. Resource Registry
 
-3\. Operation Engine
 
-4\. Task Engine
+2\. Operation Engine
 
-5\. Monitoring
+
+
+3\. Task Engine
+
+
+
+4\. Monitoring
+
+
+
+5\. Backup Integration
+
+
+
+6\. Remote
+
+
+
+7\. Automation
+
+
+
+8\. AI Assistant
+
+
+
+\---
+
+
+
+\# Current Version Roadmap
+
+
+
+v0.2.0
+
+
+
+Foundation
+
+
+
+✅
+
+
+
+v0.3.0
+
+
+
+Device Registry
+
+
+
+✅
+
+
+
+v0.4.0
+
+
+
+Resource Registry
+
+
+
+⏳
+
+
+
+v0.5.0
+
+
+
+Operation Engine
+
+
+
+⬜
+
+
+
+v0.6.0
+
+
+
+Task Engine
+
+
+
+⬜
+
+
+
+v0.7.0
+
+
+
+Monitoring
+
+
+
+⬜
+
+
+
+v0.8.0
+
+
+
+Backup Integration
+
+
+
+⬜
+
+
+
+v0.9.0
+
+
+
+Remote
+
+
+
+⬜
+
+
+
+v1.0.0
+
+
+
+First Stable Release
+
+
+
+\---
+
+
+
+\# Do Not Touch
+
+
+
+未经批准不得修改：
+
+
+
+\- AI\_GUARD.md
+
+\- 00\_PROJECT\_CHARTER.md
+
+\- 03\_ARCHITECTURE.md
+
+\- 05\_DATA\_MODEL.md
+
+
+
+如需修改：
+
+
+
+必须先进行 Architecture Review。
+
+
+
+\---
+
+
+
+\# Notes
+
+
+
+PROJECT\_STATE.md 是整个 WorkOps 项目的唯一状态文件。
+
+
+
+每完成一个 Sprint：
+
+
+
+必须更新：
+
+
+
+\- Version
+
+\- Current Sprint
+
+\- Completed
+
+\- Review Status
+
+\- Technical Debt
+
+\- Current Priority
 

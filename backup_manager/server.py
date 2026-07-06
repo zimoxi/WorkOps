@@ -1098,6 +1098,7 @@ INDEX_HTML = """<!doctype html>
     <button data-page="workspace" class="nav active" data-i18n="nav.workspace">工作台</button>
     <button data-page="overview" class="nav" data-i18n="nav.overview">总览</button>
     <button data-page="devices" class="nav" data-i18n="nav.devices">设备</button>
+    <button data-page="resources" class="nav" data-i18n="nav.resources">资源</button>
     <button data-page="storage" class="nav" data-i18n="nav.storage">连接与存储</button>
     <button data-page="restore" class="nav" data-i18n="nav.restore">恢复中心</button>
     <button data-page="nas" class="nav" data-i18n="nav.nas">NAS / Restic</button>
@@ -1111,6 +1112,7 @@ INDEX_HTML = """<!doctype html>
     <section id="workspace" class="page active"></section>
     <section id="overview" class="page"></section>
     <section id="devices" class="page"></section>
+    <section id="resources" class="page"></section>
     <section id="storage" class="page"></section>
     <section id="restore" class="page"></section>
     <section id="nas" class="page"></section>
@@ -1150,6 +1152,8 @@ INDEX_HTML = """<!doctype html>
   <script src="/static/i18n.js"></script>
   <script src="/static/workflow.js"></script>
   <script src="/static/workspace.js"></script>
+  <script src="/static/device-registry.js"></script>
+  <script src="/static/resource-registry.js"></script>
   <script src="/static/app.js"></script>
 </body>
 </html>

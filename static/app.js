@@ -790,7 +790,9 @@ function normalizeInventoryStorage(storage = {}) {
 function render() {
   if (!state.config) return;
   if (window.WorkspaceModule) WorkspaceModule.renderWorkspace();
-  renderDevices();
+  // renderDevices();  // Sprint003: replaced by DeviceRegistryModule
+  if (window.DeviceRegistryModule) DeviceRegistryModule.render();
+  if (window.ResourceRegistryModule) ResourceRegistryModule.render();
   renderOverview();
   renderStorage();
   renderRestore();
