@@ -1838,3 +1838,114 @@ button.danger.compact {
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Operation Engine (Sprint005) ────────────────────── */
+.operation-device-group {
+  margin-bottom: 20px;
+}
+
+.operation-device-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  margin: 0 0 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+}
+
+.operation-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.operation-card {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.15s;
+}
+
+.operation-card:hover {
+  box-shadow: 0 8px 24px rgba(22, 32, 51, 0.12);
+}
+
+.operation-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.operation-card-name {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.operation-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.operation-card-field {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.operation-card-label {
+  color: var(--muted);
+}
+
+.operation-card-value {
+  font-weight: 500;
+}
+
+/* Operation Type Badge */
+.operation-type-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Operation Selector */
+.operation-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 320px;
+}
+
+.operation-selector-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.operation-selector-select {
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 14px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.operation-selector-select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+/* Responsive: Operation Engine */
+@media (max-width: 767px) {
+  .operation-card-grid {
+    grid-template-columns: 1fr;
+  }
+}

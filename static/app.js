@@ -793,6 +793,7 @@ function render() {
   // renderDevices();  // Sprint003: replaced by DeviceRegistryModule
   if (window.DeviceRegistryModule) DeviceRegistryModule.render();
   if (window.ResourceRegistryModule) ResourceRegistryModule.render();
+  if (window.OperationEngineModule) OperationEngineModule.render();
   renderOverview();
   renderStorage();
   renderRestore();
