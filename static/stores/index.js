@@ -143,4 +143,19 @@
     getAll: function () { return monitorData.slice(); },
     getById: function (id) { return findById(monitorData, id); }
   };
+
+  // ─── Schedule Store ───────────────────────────────────
+  var scheduleData = [
+    { id: "sch-001", operation_id: "op-001", operation_name: "Daily Backup", schedule_type: "daily", expression: "02:00", next_run: "2026-07-05 02:00", enabled: true },
+    { id: "sch-002", operation_id: "op-002", operation_name: "NAS Photos Backup", schedule_type: "weekly", expression: "sunday 03:00", next_run: "2026-07-06 03:00", enabled: true },
+    { id: "sch-003", operation_id: "op-003", operation_name: "Daily Snapshot", schedule_type: "daily", expression: "01:00", next_run: "2026-07-05 01:00", enabled: true },
+    { id: "sch-004", operation_id: "op-004", operation_name: "Backup Verify", schedule_type: "weekly", expression: "saturday 04:00", next_run: "2026-07-05 04:00", enabled: true },
+    { id: "sch-005", operation_id: "op-005", operation_name: "Cloud Sync", schedule_type: "daily", expression: "05:00", next_run: "2026-07-05 05:00", enabled: true },
+    { id: "sch-006", operation_id: "op-007", operation_name: "Data Migration", schedule_type: "manual", expression: "-", next_run: "-", enabled: false },
+  ];
+
+  window.ScheduleStore = {
+    getAll: function () { return scheduleData.slice(); },
+    getById: function (id) { return findById(scheduleData, id); }
+  };
 })();

@@ -184,6 +184,23 @@ var WorkOps = (function () {
       "monitor.status.running": "运行中",
       "monitor.status.failed": "失败",
 
+      // 调度引擎 (Sprint011)
+      "nav.scheduler": "调度",
+      "scheduler.title": "调度引擎",
+      "scheduler.subtitle": "Operation 调度计划管理",
+      "scheduler.selectorLabel": "选择调度",
+      "scheduler.selectorPlaceholder": "-- 请选择调度 --",
+      "scheduler.noSchedule": "暂无调度计划",
+      "scheduler.type": "调度类型",
+      "scheduler.expression": "调度表达式",
+      "scheduler.nextRun": "下次执行",
+      "scheduler.enabled": "启用",
+      "scheduler.disabled": "禁用",
+      "scheduler.type.daily": "每天",
+      "scheduler.type.weekly": "每周",
+      "scheduler.type.monthly": "每月",
+      "scheduler.type.manual": "手动",
+
       // 通用按钮 / 操作
       "btn.save": "保存",
       "btn.cancel": "取消",
@@ -789,6 +806,23 @@ var WorkOps = (function () {
       "monitor.status.success": "Success",
       "monitor.status.running": "Running",
       "monitor.status.failed": "Failed",
+
+      // Scheduler Engine (Sprint011)
+      "nav.scheduler": "Scheduler",
+      "scheduler.title": "Scheduler Engine",
+      "scheduler.subtitle": "Operation schedule management",
+      "scheduler.selectorLabel": "Select Schedule",
+      "scheduler.selectorPlaceholder": "-- Select a schedule --",
+      "scheduler.noSchedule": "No schedules",
+      "scheduler.type": "Schedule Type",
+      "scheduler.expression": "Expression",
+      "scheduler.nextRun": "Next Run",
+      "scheduler.enabled": "Enabled",
+      "scheduler.disabled": "Disabled",
+      "scheduler.type.daily": "Daily",
+      "scheduler.type.weekly": "Weekly",
+      "scheduler.type.monthly": "Monthly",
+      "scheduler.type.manual": "Manual",
 
       // Common buttons
       "btn.save": "Save",

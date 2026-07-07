@@ -796,6 +796,7 @@ function render() {
   if (window.OperationEngineModule) OperationEngineModule.render();
   if (window.TaskEngineModule) TaskEngineModule.render();
   if (window.MonitoringEngineModule) MonitoringEngineModule.render();
+  if (window.SchedulerEngineModule) SchedulerEngineModule.render();
   renderOverview();
   renderStorage();
   renderRestore();
