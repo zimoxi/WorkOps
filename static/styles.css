@@ -2094,3 +2094,138 @@ button.danger.compact {
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Monitoring Engine (Sprint009) ──────────────────── */
+.monitor-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.monitor-summary-card {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+
+.monitor-summary-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  margin: 0 0 12px;
+}
+
+.monitor-summary-stats {
+  display: flex;
+  justify-content: space-around;
+}
+
+.monitor-summary-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.monitor-summary-value {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.monitor-summary-label {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.monitor-type-group {
+  margin-bottom: 20px;
+}
+
+.monitor-type-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  margin: 0 0 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+}
+
+.monitor-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.monitor-card-name {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.monitor-card-field {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.monitor-card-label {
+  color: var(--muted);
+}
+
+.monitor-card-value {
+  font-weight: 500;
+}
+
+/* Monitor Widget */
+.monitor-widget {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+
+.monitor-widget-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--muted);
+  margin: 0 0 12px;
+}
+
+.monitor-widget-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.monitor-widget-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.monitor-widget-row:last-child {
+  border-bottom: none;
+}
+
+.monitor-widget-label {
+  color: var(--muted);
+}
+
+.monitor-widget-value {
+  font-weight: 500;
+}
+
+/* Responsive: Monitoring Engine */
+@media (max-width: 767px) {
+  .monitor-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .monitor-card-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -2,7 +2,7 @@
 
 
 
-Version: 0.8.0
+Version: 0.9.0
 
 
 
@@ -34,7 +34,7 @@ Current Release:
 
 
 
-v0.6.0-task-engine
+v0.9.0-monitoring-engine
 
 
 
@@ -66,7 +66,7 @@ Current Sprint:
 
 
 
-Milestone M2 Mid Review
+Sprint010 - Unified Store Foundation
 
 
 
@@ -253,7 +253,7 @@ Architecture Decision Required
 
 
 
-Milestone M2 Mid Review
+Sprint010 - Unified Store Foundation
 
 
 

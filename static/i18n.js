@@ -165,6 +165,25 @@ var WorkOps = (function () {
       "task.status.failed": "失败",
       "task.status.cancelled": "已取消",
 
+      // 监控引擎 (Sprint009)
+      "nav.monitoring": "监控",
+      "monitor.title": "监控引擎",
+      "monitor.subtitle": "系统运行状态聚合展示",
+      "monitor.health": "健康状态",
+      "monitor.message": "状态信息",
+      "monitor.updatedAt": "更新时间",
+      "monitor.widget": "综合监控面板",
+      "monitor.widget.deviceStatus": "设备状态",
+      "monitor.widget.lastOperation": "最近操作",
+      "monitor.widget.runningTask": "运行任务",
+      "monitor.widget.warning": "警告",
+      "monitor.status.online": "正常",
+      "monitor.status.warning": "警告",
+      "monitor.status.offline": "离线",
+      "monitor.status.success": "成功",
+      "monitor.status.running": "运行中",
+      "monitor.status.failed": "失败",
+
       // 通用按钮 / 操作
       "btn.save": "保存",
       "btn.cancel": "取消",
@@ -751,6 +770,25 @@ var WorkOps = (function () {
       "task.status.success": "Success",
       "task.status.failed": "Failed",
       "task.status.cancelled": "Cancelled",
+
+      // Monitoring Engine (Sprint009)
+      "nav.monitoring": "Monitoring",
+      "monitor.title": "Monitoring Engine",
+      "monitor.subtitle": "System health status aggregation",
+      "monitor.health": "Health Status",
+      "monitor.message": "Status Message",
+      "monitor.updatedAt": "Updated At",
+      "monitor.widget": "Monitor Widget",
+      "monitor.widget.deviceStatus": "Device Status",
+      "monitor.widget.lastOperation": "Last Operation",
+      "monitor.widget.runningTask": "Running Task",
+      "monitor.widget.warning": "Warning",
+      "monitor.status.online": "Online",
+      "monitor.status.warning": "Warning",
+      "monitor.status.offline": "Offline",
+      "monitor.status.success": "Success",
+      "monitor.status.running": "Running",
+      "monitor.status.failed": "Failed",
 
       // Common buttons
       "btn.save": "Save",
