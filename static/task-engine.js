@@ -2,12 +2,12 @@
  * WorkOps Task Engine — 任务引擎
  * Sprint006: Task Engine Foundation
  * Sprint008: 删除兼容层，直接调用 Components
+ * Sprint010: 从 TaskStore 读取数据
  *
  * Task 是 Operation 的一次执行实例。
  * Task 不负责执行命令，只管理生命周期和状态。
  *
  * 独立模块，不依赖后端 API。
- * MOCK_TASK_STORE 保持模块私有，不暴露 getTasks()。
  * 通过 window.TaskEngineModule 暴露给 app.js。
  */
 (function () {
@@ -18,28 +18,10 @@
     console.error("Components library not loaded.");
     return;
   }
-
-  // ─── Mock Task Store（模块私有）─────────────────────────
-  var MOCK_TASK_STORE = [
-    // Daily Backup (op-001) 的任务
-    { id: "task-001", operation_id: "op-001", operation_name: "Daily Backup", device_name: "Windows-PC", resource_name: "Disk C", status: "success", start_time: "2026-07-04 02:00", end_time: "2026-07-04 02:05:30", duration: "5m30s", result: "备份完成，共 320GB" },
-    { id: "task-002", operation_id: "op-001", operation_name: "Daily Backup", device_name: "Windows-PC", resource_name: "Disk C", status: "success", start_time: "2026-07-03 02:00", end_time: "2026-07-03 02:04:45", duration: "4m45s", result: "备份完成，共 318GB" },
-    { id: "task-003", operation_id: "op-001", operation_name: "Daily Backup", device_name: "Windows-PC", resource_name: "Disk C", status: "failed", start_time: "2026-07-02 02:00", end_time: "2026-07-02 02:01:20", duration: "1m20s", result: "错误：连接超时" },
-
-    // NAS Photos Backup (op-002) 的任务
-    { id: "task-004", operation_id: "op-002", operation_name: "NAS Photos Backup", device_name: "NAS-01", resource_name: "Dataset photos", status: "success", start_time: "2026-07-01 03:00", end_time: "2026-07-01 03:15:00", duration: "15m00s", result: "备份完成，共 2.1TB" },
-
-    // Daily Snapshot (op-003) 的任务
-    { id: "task-005", operation_id: "op-003", operation_name: "Daily Snapshot", device_name: "NAS-01", resource_name: "Pool tank", status: "success", start_time: "2026-07-04 01:00", end_time: "2026-07-04 01:02:15", duration: "2m15s", result: "快照创建成功" },
-    { id: "task-006", operation_id: "op-003", operation_name: "Daily Snapshot", device_name: "NAS-01", resource_name: "Pool tank", status: "success", start_time: "2026-07-03 01:00", end_time: "2026-07-03 01:02:30", duration: "2m30s", result: "快照创建成功" },
-
-    // Cloud Sync (op-005) 的任务
-    { id: "task-007", operation_id: "op-005", operation_name: "Cloud Sync", device_name: "NAS-01", resource_name: "Share backup", status: "success", start_time: "2026-07-04 05:00", end_time: "2026-07-04 05:10:00", duration: "10m00s", result: "同步完成，共 5.2TB" },
-    { id: "task-008", operation_id: "op-005", operation_name: "Cloud Sync", device_name: "NAS-01", resource_name: "Share backup", status: "running", start_time: "2026-07-03 05:00", end_time: "-", duration: "-", result: "同步中..." },
-
-    // Data Migration (op-007) 的任务
-    { id: "task-009", operation_id: "op-007", operation_name: "Data Migration", device_name: "PVE", resource_name: "Storage local-lvm", status: "pending", start_time: "2026-07-04 10:00", end_time: "-", duration: "-", result: "等待执行" },
-  ];
+  if (!window.TaskStore) {
+    console.error("TaskStore not loaded.");
+    return;
+  }
 
   // ─── Helpers ────────────────────────────────────────────
   function t(key) {
@@ -114,7 +96,7 @@
     var el = document.getElementById("tasks");
     if (!el) return;
 
-    var tasks = MOCK_TASK_STORE;
+    var tasks = TaskStore.getAll();
     var grouped = groupByOperation(tasks);
 
     var html =
@@ -173,8 +155,8 @@
 
     // Selector 选项
     var selectorOptions = [];
-    for (var s = 0; s < MOCK_TASK_STORE.length; s++) {
-      var t2 = MOCK_TASK_STORE[s];
+    for (var s = 0; s < tasks.length; s++) {
+      var t2 = tasks[s];
       var date = t2.start_time.split(" ")[0];
       selectorOptions.push({ value: t2.id, label: t2.operation_name + " - " + date + " (" + t2.status + ")" });
     }
@@ -195,7 +177,7 @@
     el.innerHTML = html;
   }
 
-  // ─── Public API（只暴露 3 个方法）────────────────────────
+  // ─── Public API ─────────────────────────────────────────
   window.TaskEngineModule = {
     render: renderTaskEngine,
   };

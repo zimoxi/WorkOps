@@ -2,6 +2,7 @@
  * WorkOps Resource Registry — 资源注册中心
  * Sprint004: Resource Registry Foundation
  * Sprint008: 删除兼容层，直接调用 Components
+ * Sprint010: 从 ResourceStore 读取数据
  *
  * 独立模块，不依赖后端 API。
  * 不依赖 DeviceRegistryModule（避免跨模块 UI 依赖）。
@@ -15,28 +16,10 @@
     console.error("Components library not loaded.");
     return;
   }
-
-  // ─── Mock Resource Store ────────────────────────────────
-  var MOCK_RESOURCE_STORE = [
-    // Windows-PC 的资源
-    { id: "r-001", device_id: "550e8400-e29b-41d4-a716-446655440001", device_name: "Windows-PC", name: "Disk C", type: "disk", path: "C:\\", mount_point: "C:\\", size_total: "512GB", size_used: "320GB", status: "online" },
-    { id: "r-002", device_id: "550e8400-e29b-41d4-a716-446655440001", device_name: "Windows-PC", name: "Disk D", type: "disk", path: "D:\\", mount_point: "D:\\", size_total: "2TB", size_used: "1.2TB", status: "online" },
-    { id: "r-003", device_id: "550e8400-e29b-41d4-a716-446655440001", device_name: "Windows-PC", name: "Backup Folder", type: "folder", path: "D:\\Backup", mount_point: "-", size_total: "-", size_used: "-", status: "online" },
-
-    // NAS-01 的资源
-    { id: "r-004", device_id: "550e8400-e29b-41d4-a716-446655440003", device_name: "NAS-01", name: "Pool tank", type: "dataset", path: "tank", mount_point: "/mnt/tank", size_total: "16TB", size_used: "8.5TB", status: "online" },
-    { id: "r-005", device_id: "550e8400-e29b-41d4-a716-446655440003", device_name: "NAS-01", name: "Dataset photos", type: "dataset", path: "tank/photos", mount_point: "/mnt/tank/photos", size_total: "4TB", size_used: "2.1TB", status: "online" },
-    { id: "r-006", device_id: "550e8400-e29b-41d4-a716-446655440003", device_name: "NAS-01", name: "Share backup", type: "share", path: "/mnt/tank/backup", mount_point: "-", size_total: "8TB", size_used: "5.2TB", status: "online" },
-
-    // PVE 的资源
-    { id: "r-007", device_id: "550e8400-e29b-41d4-a716-446655440005", device_name: "PVE", name: "VM 101", type: "vm", path: "101", mount_point: "-", size_total: "100GB", size_used: "45GB", status: "online" },
-    { id: "r-008", device_id: "550e8400-e29b-41d4-a716-446655440005", device_name: "PVE", name: "VM 102", type: "vm", path: "102", mount_point: "-", size_total: "200GB", size_used: "120GB", status: "online" },
-    { id: "r-009", device_id: "550e8400-e29b-41d4-a716-446655440005", device_name: "PVE", name: "Storage local-lvm", type: "storage", path: "local-lvm", mount_point: "-", size_total: "500GB", size_used: "280GB", status: "online" },
-
-    // OMV 的资源
-    { id: "r-010", device_id: "550e8400-e29b-41d4-a716-446655440004", device_name: "OMV", name: "Share data", type: "share", path: "/sharedfolders/data", mount_point: "-", size_total: "4TB", size_used: "2.8TB", status: "online" },
-    { id: "r-011", device_id: "550e8400-e29b-41d4-a716-446655440004", device_name: "OMV", name: "Share media", type: "share", path: "/sharedfolders/media", mount_point: "-", size_total: "8TB", size_used: "6.1TB", status: "online" },
-  ];
+  if (!window.ResourceStore) {
+    console.error("ResourceStore not loaded.");
+    return;
+  }
 
   // ─── Helpers ────────────────────────────────────────────
   function t(key) {
@@ -72,7 +55,7 @@
     var el = document.getElementById("resources");
     if (!el) return;
 
-    var resources = MOCK_RESOURCE_STORE;
+    var resources = ResourceStore.getAll();
     var grouped = groupByDevice(resources);
 
     var html =
@@ -119,8 +102,8 @@
 
     // Selector 选项
     var selectorOptions = [];
-    for (var s = 0; s < MOCK_RESOURCE_STORE.length; s++) {
-      var res = MOCK_RESOURCE_STORE[s];
+    for (var s = 0; s < resources.length; s++) {
+      var res = resources[s];
       selectorOptions.push({ value: res.id, label: res.name + " (" + res.device_name + ")" });
     }
 
@@ -143,6 +126,5 @@
   // ─── Public API ─────────────────────────────────────────
   window.ResourceRegistryModule = {
     render: renderResourceRegistry,
-    getResources: function () { return MOCK_RESOURCE_STORE; },
   };
 })();

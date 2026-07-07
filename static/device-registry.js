@@ -2,6 +2,7 @@
  * WorkOps Device Registry — 设备注册中心
  * Sprint003: Device Registry Foundation
  * Sprint008: 删除兼容层，直接调用 Components
+ * Sprint010: 从 DeviceStore 读取数据
  *
  * 独立模块，不依赖后端 API。
  * 通过 window.DeviceRegistryModule 暴露给 app.js。
@@ -14,17 +15,10 @@
     console.error("Components library not loaded.");
     return;
   }
-
-  // ─── Mock Device Store ──────────────────────────────────
-  var MOCK_DEVICE_STORE = [
-    { id: "550e8400-e29b-41d4-a716-446655440001", name: "Windows-PC", type: "windows", status: "online", ip: "192.168.1.100" },
-    { id: "550e8400-e29b-41d4-a716-446655440002", name: "Linux-Server", type: "linux", status: "online", ip: "192.168.1.10" },
-    { id: "550e8400-e29b-41d4-a716-446655440003", name: "NAS-01", type: "nas", status: "online", ip: "192.168.1.2" },
-    { id: "550e8400-e29b-41d4-a716-446655440004", name: "OMV", type: "omv", status: "online", ip: "192.168.1.5" },
-    { id: "550e8400-e29b-41d4-a716-446655440005", name: "PVE", type: "pve", status: "online", ip: "192.168.1.3" },
-    { id: "550e8400-e29b-41d4-a716-446655440006", name: "PBS", type: "pbs", status: "offline", ip: "192.168.1.4" },
-    { id: "550e8400-e29b-41d4-a716-446655440007", name: "Router", type: "router", status: "online", ip: "192.168.1.1" },
-  ];
+  if (!window.DeviceStore) {
+    console.error("DeviceStore not loaded.");
+    return;
+  }
 
   // ─── Helpers ────────────────────────────────────────────
   function t(key) {
@@ -44,7 +38,7 @@
     var el = document.getElementById("devices");
     if (!el) return;
 
-    var devices = MOCK_DEVICE_STORE;
+    var devices = DeviceStore.getAll();
     var cards = "";
     for (var i = 0; i < devices.length; i++) {
       var device = devices[i];
@@ -63,8 +57,8 @@
 
     // Selector 选项
     var selectorOptions = [];
-    for (var j = 0; j < MOCK_DEVICE_STORE.length; j++) {
-      var d = MOCK_DEVICE_STORE[j];
+    for (var j = 0; j < devices.length; j++) {
+      var d = devices[j];
       selectorOptions.push({ value: d.id, label: d.name + " (" + d.ip + ")" });
     }
 
@@ -95,6 +89,5 @@
   // ─── Public API ─────────────────────────────────────────
   window.DeviceRegistryModule = {
     render: renderDeviceRegistry,
-    getDevices: function () { return MOCK_DEVICE_STORE; },
   };
 })();

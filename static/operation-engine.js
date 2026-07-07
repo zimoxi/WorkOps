@@ -2,10 +2,10 @@
  * WorkOps Operation Engine — 操作引擎
  * Sprint005: Operation Engine Foundation
  * Sprint008: 删除兼容层，直接调用 Components
+ * Sprint010: 从 OperationStore 读取数据
  *
  * 独立模块，不依赖后端 API。
  * 不依赖 DeviceRegistryModule 或 ResourceRegistryModule。
- * MOCK_OPERATION_STORE 保持模块私有，不暴露 getOperations()。
  * 通过 window.OperationEngineModule 暴露给 app.js。
  */
 (function () {
@@ -16,24 +16,10 @@
     console.error("Components library not loaded.");
     return;
   }
-
-  // ─── Mock Operation Store（模块私有）────────────────────
-  var MOCK_OPERATION_STORE = [
-    // Windows-PC 的操作
-    { id: "op-001", name: "Daily Backup", type: "backup", device_id: "550e8400-e29b-41d4-a716-446655440001", device_name: "Windows-PC", resource_id: "r-001", resource_name: "Disk C", schedule: "daily", last_run: "2026-07-04 02:00", status: "success" },
-
-    // NAS-01 的操作
-    { id: "op-002", name: "NAS Photos Backup", type: "backup", device_id: "550e8400-e29b-41d4-a716-446655440003", device_name: "NAS-01", resource_id: "r-005", resource_name: "Dataset photos", schedule: "weekly", last_run: "2026-07-01 03:00", status: "success" },
-    { id: "op-003", name: "Daily Snapshot", type: "snapshot", device_id: "550e8400-e29b-41d4-a716-446655440003", device_name: "NAS-01", resource_id: "r-004", resource_name: "Pool tank", schedule: "daily", last_run: "2026-07-04 01:00", status: "success" },
-    { id: "op-004", name: "Backup Verify", type: "verify", device_id: "550e8400-e29b-41d4-a716-446655440003", device_name: "NAS-01", resource_id: "r-006", resource_name: "Share backup", schedule: "weekly", last_run: "2026-07-03 04:00", status: "success" },
-    { id: "op-005", name: "Cloud Sync", type: "cloud_sync", device_id: "550e8400-e29b-41d4-a716-446655440003", device_name: "NAS-01", resource_id: "r-006", resource_name: "Share backup", schedule: "daily", last_run: "2026-07-04 05:00", status: "success" },
-
-    // Linux-Server 的操作
-    { id: "op-006", name: "Test Restore", type: "restore", device_id: "550e8400-e29b-41d4-a716-446655440002", device_name: "Linux-Server", resource_id: "r-004", resource_name: "Pool tank", schedule: "manual", last_run: "2026-06-28 10:00", status: "success" },
-
-    // PVE 的操作
-    { id: "op-007", name: "Data Migration", type: "migration", device_id: "550e8400-e29b-41d4-a716-446655440005", device_name: "PVE", resource_id: "r-009", resource_name: "Storage local-lvm", schedule: "manual", last_run: "-", status: "pending" },
-  ];
+  if (!window.OperationStore) {
+    console.error("OperationStore not loaded.");
+    return;
+  }
 
   // ─── Operation Type 定义（Operation 特有，不迁移）───────
   var OPERATION_TYPES = {
@@ -105,7 +91,7 @@
     var el = document.getElementById("operations");
     if (!el) return;
 
-    var operations = MOCK_OPERATION_STORE;
+    var operations = OperationStore.getAll();
     var grouped = groupByDevice(operations);
 
     var html =
@@ -150,8 +136,8 @@
 
     // Selector 选项
     var selectorOptions = [];
-    for (var s = 0; s < MOCK_OPERATION_STORE.length; s++) {
-      var op = MOCK_OPERATION_STORE[s];
+    for (var s = 0; s < operations.length; s++) {
+      var op = operations[s];
       selectorOptions.push({ value: op.id, label: op.name + " (" + op.device_name + ")" });
     }
 
@@ -171,7 +157,7 @@
     el.innerHTML = html;
   }
 
-  // ─── Public API（只暴露 3 个方法）────────────────────────
+  // ─── Public API ─────────────────────────────────────────
   window.OperationEngineModule = {
     render: renderOperationEngine,
   };

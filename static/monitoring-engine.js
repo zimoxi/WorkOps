@@ -1,12 +1,12 @@
 /**
  * WorkOps Monitoring Engine — 监控引擎
  * Sprint009: Monitoring Engine Foundation
+ * Sprint010: 从 MonitorStore 读取数据
  *
  * Monitoring 负责展示系统运行状态。
  * Monitoring 不负责修改数据、执行任务、调度任务。
  *
  * Read Model：只读，不提供 CRUD / Setter。
- * MOCK_MONITOR_STORE 模块私有，不暴露 getMonitors()。
  *
  * 通过 window.MonitoringEngineModule 暴露给 app.js。
  */
@@ -18,32 +18,10 @@
     console.error("Components library not loaded.");
     return;
   }
-
-  // ─── Mock Monitor Store（模块私有）──────────────────────
-  // 严格遵循 Sprint009 规格：id, target_type, target_name, status, message, updated_at
-  // 不使用 metric / value 字段
-  // CPU / Memory / Disk / Temperature 信息放入 message
-  var MOCK_MONITOR_STORE = [
-    // Device Health
-    { id: "mon-001", target_type: "device", target_name: "Windows-PC", status: "online", message: "设备正常运行", updated_at: "2026-07-04 12:00" },
-    { id: "mon-002", target_type: "device", target_name: "Linux-Server", status: "online", message: "设备正常运行", updated_at: "2026-07-04 12:00" },
-    { id: "mon-003", target_type: "device", target_name: "NAS-01", status: "online", message: "设备正常运行", updated_at: "2026-07-04 12:00" },
-    { id: "mon-004", target_type: "device", target_name: "PVE", status: "warning", message: "CPU 使用率 78%", updated_at: "2026-07-04 12:00" },
-    { id: "mon-005", target_type: "device", target_name: "PBS", status: "offline", message: "设备离线", updated_at: "2026-07-04 12:00" },
-
-    // Resource Health
-    { id: "mon-006", target_type: "resource", target_name: "Disk C", status: "online", message: "存储正常，已用 320/512GB", updated_at: "2026-07-04 12:00" },
-    { id: "mon-007", target_type: "resource", target_name: "Pool tank", status: "online", message: "存储正常，已用 8.5/16TB", updated_at: "2026-07-04 12:00" },
-    { id: "mon-008", target_type: "resource", target_name: "VM 101", status: "online", message: "虚拟机运行中，内存 45/100GB", updated_at: "2026-07-04 12:00" },
-
-    // Operation Health
-    { id: "mon-009", target_type: "operation", target_name: "Daily Backup", status: "success", message: "最近执行成功，耗时 5m30s", updated_at: "2026-07-04 02:05" },
-    { id: "mon-010", target_type: "operation", target_name: "Cloud Sync", status: "running", message: "正在同步，已传输 3.2/5.2TB", updated_at: "2026-07-04 05:00" },
-
-    // Task Health
-    { id: "mon-011", target_type: "task", target_name: "task-001", status: "success", message: "任务执行成功，备份 320GB", updated_at: "2026-07-04 02:05" },
-    { id: "mon-012", target_type: "task", target_name: "task-008", status: "running", message: "任务执行中，已运行 25 小时", updated_at: "2026-07-03 05:00" },
-  ];
+  if (!window.MonitorStore) {
+    console.error("MonitorStore not loaded.");
+    return;
+  }
 
   // ─── Helpers ────────────────────────────────────────────
   function t(key) {
@@ -181,7 +159,7 @@
     var el = document.getElementById("monitoring");
     if (!el) return;
 
-    var monitors = MOCK_MONITOR_STORE;
+    var monitors = MonitorStore.getAll();
     var grouped = groupByType(monitors);
 
     var html =

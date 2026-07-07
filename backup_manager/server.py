@@ -1159,6 +1159,7 @@ INDEX_HTML = """<!doctype html>
   <script src="/static/i18n.js"></script>
   <script src="/static/workflow.js"></script>
   <script src="/static/components/index.js"></script>
+  <script src="/static/stores/index.js"></script>
   <script src="/static/workspace.js"></script>
   <script src="/static/device-registry.js"></script>
   <script src="/static/resource-registry.js"></script>
