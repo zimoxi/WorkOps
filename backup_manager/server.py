@@ -42,6 +42,7 @@ from .workflow import derive_workflow
 from .device_repository import DeviceRepository
 from .device_service import DeviceService
 from .auth_service import validate_user, create_session, get_session, destroy_session, SESSION_COOKIE_NAME
+from .api import handle_api_request, ApiError, error_response
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -121,6 +122,21 @@ class AppContext:
         device_repo = DeviceRepository(data_dir / "workops.db")
         self.device_service = DeviceService(device_repo)
         self.device_service.ensure_mock_data()
+        
+        # Mock data for API Layer (Sprint014)
+        self.resources = [
+            {"id": "r-001", "device_id": "dev-001", "name": "Disk C", "type": "disk", "path": "C:\\", "mount_point": "C:\\", "size_total": "512GB", "size_used": "320GB", "status": "online"},
+            {"id": "r-002", "device_id": "dev-001", "name": "Disk D", "type": "disk", "path": "D:\\", "mount_point": "D:\\", "size_total": "2TB", "size_used": "1.2TB", "status": "online"},
+            {"id": "r-003", "device_id": "dev-002", "name": "Pool tank", "type": "dataset", "path": "tank", "mount_point": "/mnt/tank", "size_total": "16TB", "size_used": "8.5TB", "status": "online"},
+        ]
+        self.operations = [
+            {"id": "op-001", "name": "Daily Backup", "type": "backup", "device_id": "dev-001", "resource_id": "r-001", "schedule": "daily", "last_run": "2026-07-04 02:00", "status": "success"},
+            {"id": "op-002", "name": "NAS Photos Backup", "type": "backup", "device_id": "dev-002", "resource_id": "r-003", "schedule": "weekly", "last_run": "2026-07-01 03:00", "status": "success"},
+        ]
+        self.tasks = [
+            {"id": "task-001", "operation_id": "op-001", "operation_name": "Daily Backup", "device_id": "dev-001", "status": "success", "start_time": "2026-07-04 02:00", "end_time": "2026-07-04 02:05:30", "duration": "5m30s"},
+            {"id": "task-002", "operation_id": "op-002", "operation_name": "NAS Photos Backup", "device_id": "dev-002", "status": "success", "start_time": "2026-07-01 03:00", "end_time": "2026-07-01 03:15:00", "duration": "15m00s"},
+        ]
 
 
 def runtime_flags_from_profile(profile_payload: dict[str, object]) -> dict[str, object]:
@@ -867,6 +883,17 @@ def make_handler(context: AppContext):
                     self.send_json({"success": True, "data": {"user": {"id": session["user_id"], "username": session["username"], "role": session["role"], "enabled": True}}})
                 else:
                     self.send_json({"success": False, "error": "Not authenticated"}, HTTPStatus.UNAUTHORIZED)
+                return
+            # API v1 (Sprint014)
+            if parsed.path.startswith("/api/v1/"):
+                try:
+                    query_params = {k: v[0] for k, v in parse_qs(parsed.query).items()}
+                    result = handle_api_request("GET", parsed.path, query_params, context)
+                    self.send_json(result)
+                except ApiError as e:
+                    self.send_json(error_response(e.code, e.message), HTTPStatus(e.status_code))
+                except Exception as e:
+                    self.send_json(error_response("INTERNAL_ERROR", str(e)), HTTPStatus.INTERNAL_SERVER_ERROR)
                 return
             # Device API (Sprint002)
             if parsed.path == "/api/devices":
