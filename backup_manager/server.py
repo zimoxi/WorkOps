@@ -41,6 +41,7 @@ from .restore_center import RestoreStore, summarize_staging_entries
 from .workflow import derive_workflow
 from .device_repository import DeviceRepository
 from .device_service import DeviceService
+from .auth_service import validate_user, create_session, get_session, destroy_session, SESSION_COOKIE_NAME
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -858,6 +859,15 @@ def make_handler(context: AppContext):
             if parsed.path.startswith("/static/"):
                 self.serve_static(parsed.path.removeprefix("/static/"))
                 return
+            # Auth API (Sprint013)
+            if parsed.path == "/api/auth/me":
+                session_id = self.get_cookie(SESSION_COOKIE_NAME)
+                session = get_session(session_id)
+                if session:
+                    self.send_json({"success": True, "data": {"user": {"id": session["user_id"], "username": session["username"], "role": session["role"], "enabled": True}}})
+                else:
+                    self.send_json({"success": False, "error": "Not authenticated"}, HTTPStatus.UNAUTHORIZED)
+                return
             # Device API (Sprint002)
             if parsed.path == "/api/devices":
                 devices = context.device_service.list_devices()
@@ -877,6 +887,31 @@ def make_handler(context: AppContext):
             parsed = urlparse(self.path)
             try:
                 body = self.read_json()
+                # Auth API (Sprint013)
+                if parsed.path == "/api/auth/login":
+                    username = body.get("username", "")
+                    password = body.get("password", "")
+                    user = validate_user(username, password)
+                    if user:
+                        session_id = create_session(user)
+                        self.send_response(HTTPStatus.OK)
+                        self.send_header("Content-Type", "application/json")
+                        self.send_header("Set-Cookie", f"{SESSION_COOKIE_NAME}={session_id}; Path=/; HttpOnly; SameSite=Lax")
+                        self.end_headers()
+                        self.wfile.write(json.dumps({"success": True, "data": {"user": user}}).encode())
+                    else:
+                        self.send_json({"success": False, "error": "Invalid username or password"}, HTTPStatus.UNAUTHORIZED)
+                    return
+                if parsed.path == "/api/auth/logout":
+                    session_id = self.get_cookie(SESSION_COOKIE_NAME)
+                    if session_id:
+                        destroy_session(session_id)
+                    self.send_response(HTTPStatus.OK)
+                    self.send_header("Content-Type", "application/json")
+                    self.send_header("Set-Cookie", f"{SESSION_COOKIE_NAME}=; Path=/; HttpOnly; Expires=Thu, 01 Jan 1970 00:00:00 GMT")
+                    self.end_headers()
+                    self.wfile.write(json.dumps({"success": True}).encode())
+                    return
                 if parsed.path == "/api/config":
                     config = context.config_store.update(sanitize_config_patch(body))
                     self.send_json(config_response_payload(context, config))
@@ -1021,6 +1056,17 @@ def make_handler(context: AppContext):
                 return
             self.send_error(HTTPStatus.NOT_FOUND)
 
+        def get_cookie(self, name: str) -> str:
+            """从 Cookie 中获取指定名称的值"""
+            cookie_header = self.headers.get("Cookie", "")
+            if not cookie_header:
+                return ""
+            for part in cookie_header.split(";"):
+                part = part.strip()
+                if part.startswith(name + "="):
+                    return part[len(name) + 1:]
+            return ""
+
         def read_json(self) -> dict[str, Any]:
             length = int(self.headers.get("content-length", "0"))
             raw = self.rfile.read(length).decode("utf-8") if length else "{}"
@@ -1096,6 +1142,7 @@ INDEX_HTML = """<!doctype html>
       </div>
     </header>
     <div id="langSwitcher" class="lang-switcher-container"></div>
+    <div id="userBadge" class="user-badge-container"></div>
     <button data-page="workspace" class="nav active" data-i18n="nav.workspace">工作台</button>
     <button data-page="overview" class="nav" data-i18n="nav.overview">总览</button>
     <button data-page="devices" class="nav" data-i18n="nav.devices">设备</button>
@@ -1104,6 +1151,7 @@ INDEX_HTML = """<!doctype html>
     <button data-page="tasks" class="nav" data-i18n="nav.tasks">任务</button>
     <button data-page="monitoring" class="nav" data-i18n="nav.monitoring">监控</button>
     <button data-page="scheduler" class="nav" data-i18n="nav.scheduler">调度</button>
+    <button data-page="history" class="nav" data-i18n="nav.history">历史</button>
     <button data-page="storage" class="nav" data-i18n="nav.storage">连接与存储</button>
     <button data-page="restore" class="nav" data-i18n="nav.restore">恢复中心</button>
     <button data-page="nas" class="nav" data-i18n="nav.nas">NAS / Restic</button>
@@ -1114,6 +1162,7 @@ INDEX_HTML = """<!doctype html>
     <button data-page="jobs" class="nav" data-i18n="nav.jobs">任务日志</button>
   </aside>
   <main class="main">
+    <section id="login-page" class="login-page" style="display:none;"></section>
     <section id="workspace" class="page active"></section>
     <section id="overview" class="page"></section>
     <section id="devices" class="page"></section>
@@ -1122,6 +1171,7 @@ INDEX_HTML = """<!doctype html>
     <section id="tasks" class="page"></section>
     <section id="monitoring" class="page"></section>
     <section id="scheduler" class="page"></section>
+    <section id="history" class="page"></section>
     <section id="storage" class="page"></section>
     <section id="restore" class="page"></section>
     <section id="nas" class="page"></section>
@@ -1169,6 +1219,8 @@ INDEX_HTML = """<!doctype html>
   <script src="/static/task-engine.js"></script>
   <script src="/static/monitoring-engine.js"></script>
   <script src="/static/scheduler-engine.js"></script>
+  <script src="/static/history-engine.js"></script>
+  <script src="/static/auth.js"></script>
   <script src="/static/app.js"></script>
 </body>
 </html>
