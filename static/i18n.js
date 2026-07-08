@@ -201,6 +201,35 @@ var WorkOps = (function () {
       "scheduler.type.monthly": "每月",
       "scheduler.type.manual": "手动",
 
+      // 执行历史 (Sprint012)
+      "nav.history": "历史",
+      "history.title": "执行历史",
+      "history.subtitle": "查看 Operation 与 Task 的历史结果",
+      "history.timeline": "最近执行",
+      "history.noHistory": "暂无历史记录",
+      "history.selectorLabel": "选择结果",
+      "history.startedAt": "开始时间",
+      "history.finishedAt": "结束时间",
+      "history.duration": "持续时间",
+      "history.message": "执行结果",
+      "history.status.success": "成功",
+      "history.status.failed": "失败",
+      "history.status.running": "执行中",
+      "history.status.pending": "等待中",
+
+      // 认证 (Sprint013)
+      "auth.username": "用户名",
+      "auth.password": "密码",
+      "auth.login": "登录",
+      "auth.logout": "退出",
+      "auth.usernamePlaceholder": "请输入用户名",
+      "auth.passwordPlaceholder": "请输入密码",
+      "auth.loginFailed": "用户名或密码错误",
+      "auth.fillAllFields": "请填写所有字段",
+      "auth.role.admin": "管理员",
+      "auth.role.operator": "操作员",
+      "auth.role.viewer": "查看者",
+
       // 通用按钮 / 操作
       "btn.save": "保存",
       "btn.cancel": "取消",
@@ -823,6 +852,35 @@ var WorkOps = (function () {
       "scheduler.type.weekly": "Weekly",
       "scheduler.type.monthly": "Monthly",
       "scheduler.type.manual": "Manual",
+
+      // Execution History (Sprint012)
+      "nav.history": "History",
+      "history.title": "Execution History",
+      "history.subtitle": "View historical results of Operations and Tasks",
+      "history.timeline": "Recent Executions",
+      "history.noHistory": "No history records",
+      "history.selectorLabel": "Select Result",
+      "history.startedAt": "Started At",
+      "history.finishedAt": "Finished At",
+      "history.duration": "Duration",
+      "history.message": "Result",
+      "history.status.success": "Success",
+      "history.status.failed": "Failed",
+      "history.status.running": "Running",
+      "history.status.pending": "Pending",
+
+      // Authentication (Sprint013)
+      "auth.username": "Username",
+      "auth.password": "Password",
+      "auth.login": "Login",
+      "auth.logout": "Logout",
+      "auth.usernamePlaceholder": "Enter username",
+      "auth.passwordPlaceholder": "Enter password",
+      "auth.loginFailed": "Invalid username or password",
+      "auth.fillAllFields": "Please fill in all fields",
+      "auth.role.admin": "Admin",
+      "auth.role.operator": "Operator",
+      "auth.role.viewer": "Viewer",
 
       // Common buttons
       "btn.save": "Save",

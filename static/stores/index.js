@@ -158,4 +158,23 @@
     getAll: function () { return scheduleData.slice(); },
     getById: function (id) { return findById(scheduleData, id); }
   };
+
+  // ─── Result Store ─────────────────────────────────────
+  // Sprint012 字段：id, task_id, operation_name, status, started_at, finished_at, duration, message
+  var resultData = [
+    { id: "res-001", task_id: "task-001", operation_name: "Daily Backup", status: "success", started_at: "2026-07-04 02:00", finished_at: "2026-07-04 02:05:30", duration: "5m30s", message: "备份完成，共 320GB" },
+    { id: "res-002", task_id: "task-002", operation_name: "Daily Backup", status: "success", started_at: "2026-07-03 02:00", finished_at: "2026-07-03 02:04:45", duration: "4m45s", message: "备份完成，共 318GB" },
+    { id: "res-003", task_id: "task-003", operation_name: "Daily Backup", status: "failed", started_at: "2026-07-02 02:00", finished_at: "2026-07-02 02:01:20", duration: "1m20s", message: "错误：连接超时" },
+    { id: "res-004", task_id: "task-004", operation_name: "NAS Photos Backup", status: "success", started_at: "2026-07-01 03:00", finished_at: "2026-07-01 03:15:00", duration: "15m00s", message: "备份完成，共 2.1TB" },
+    { id: "res-005", task_id: "task-005", operation_name: "Daily Snapshot", status: "success", started_at: "2026-07-04 01:00", finished_at: "2026-07-04 01:02:15", duration: "2m15s", message: "快照创建成功" },
+    { id: "res-006", task_id: "task-006", operation_name: "Daily Snapshot", status: "success", started_at: "2026-07-03 01:00", finished_at: "2026-07-03 01:02:30", duration: "2m30s", message: "快照创建成功" },
+    { id: "res-007", task_id: "task-007", operation_name: "Cloud Sync", status: "success", started_at: "2026-07-04 05:00", finished_at: "2026-07-04 05:10:00", duration: "10m00s", message: "同步完成，共 5.2TB" },
+    { id: "res-008", task_id: "task-008", operation_name: "Cloud Sync", status: "running", started_at: "2026-07-03 05:00", finished_at: "", duration: "-", message: "同步中..." },
+    { id: "res-009", task_id: "task-009", operation_name: "Data Migration", status: "pending", started_at: "2026-07-04 10:00", finished_at: "", duration: "-", message: "等待执行" },
+  ];
+
+  window.ResultStore = {
+    getAll: function () { return resultData.slice(); },
+    getById: function (id) { return findById(resultData, id); }
+  };
 })();

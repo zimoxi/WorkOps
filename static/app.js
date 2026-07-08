@@ -713,6 +713,20 @@ async function init() {
   // 应用静态 i18n
   updateStaticI18n();
 
+  // Auth 初始化 (Sprint013)
+  if (window.AuthModule) {
+    await new Promise(function (resolve) {
+      AuthModule.init(function (loggedIn) {
+        resolve();
+      });
+    });
+    // 渲染后检查登录状态
+    render();
+    if (!AuthModule.isLoggedIn()) {
+      return; // 未登录，不加载状态
+    }
+  }
+
   const payload = await api("/api/state");
   syncState(payload);
   if (!state.discovery && state.inventory?.storage) {
@@ -788,6 +802,31 @@ function normalizeInventoryStorage(storage = {}) {
 }
 
 function render() {
+  // Auth 检查 (Sprint013)
+  var loginPage = document.getElementById("login-page");
+  var mainContent = document.querySelector(".main");
+  var sidebar = document.querySelector(".sidebar");
+
+  if (window.AuthModule && !AuthModule.isLoggedIn()) {
+    // 未登录：显示 Login Page，隐藏其他内容
+    if (loginPage) loginPage.style.display = "block";
+    if (mainContent) mainContent.style.display = "none";
+    if (sidebar) sidebar.style.display = "none";
+    AuthModule.renderLogin();
+    return;
+  }
+
+  // 已登录：隐藏 Login Page，显示正常内容
+  if (loginPage) loginPage.style.display = "none";
+  if (mainContent) mainContent.style.display = "";
+  if (sidebar) sidebar.style.display = "";
+
+  // 渲染 User Badge
+  var badgeEl = document.getElementById("userBadge");
+  if (badgeEl && window.AuthModule) {
+    badgeEl.innerHTML = AuthModule.renderUserBadge();
+  }
+
   if (!state.config) return;
   if (window.WorkspaceModule) WorkspaceModule.renderWorkspace();
   // renderDevices();  // Sprint003: replaced by DeviceRegistryModule
@@ -797,6 +836,7 @@ function render() {
   if (window.TaskEngineModule) TaskEngineModule.render();
   if (window.MonitoringEngineModule) MonitoringEngineModule.render();
   if (window.SchedulerEngineModule) SchedulerEngineModule.render();
+  if (window.HistoryEngineModule) HistoryEngineModule.render();
   renderOverview();
   renderStorage();
   renderRestore();
