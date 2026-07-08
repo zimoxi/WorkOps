@@ -1,51 +1,14 @@
-# Python
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-*.egg-info/
-dist/
-build/
-*.egg
+*.pyc
 
-# Virtual Environment
-.venv/
-venv/
-ENV/
-env/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-Thumbs.db
-desktop.ini
-
-# Logs
-*.log
-logs/
-
-# Data
-*.db
-*.sqlite
-*.sqlite3
-
-# Secrets
 .env
-.env.local
-*.pem
-*.key
 
-# Node
+.vscode/
+
+.idea/
+
+*.log
+
+.DS_Store
+
 node_modules/
-
-# Temporary
-tmp/
-temp/
-*.tmp
