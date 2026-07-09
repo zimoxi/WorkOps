@@ -1,16 +1,18 @@
 """
 WorkOps API Router — 路由分发
 Sprint014: API Layer Foundation
+Sprint015: Permission Foundation
 
 API 路由入口
-Sprint014 只实现 GET 端点
+集成权限检查
 """
 
 from .response import success_response, list_response
-from .errors import NotFoundError, ValidationError
+from .errors import NotFoundError, ValidationError, ForbiddenError
+from ..permission import check_permission
 
 
-def handle_api_request(method, path, query_params, context):
+def handle_api_request(method, path, query_params, context, user=None):
     """
     API 路由入口
     
@@ -19,6 +21,7 @@ def handle_api_request(method, path, query_params, context):
         path: 请求路径
         query_params: 查询参数字典
         context: AppContext 对象
+        user: 当前用户信息 (Sprint015)
     
     Returns:
         dict: 统一格式响应
@@ -27,45 +30,68 @@ def handle_api_request(method, path, query_params, context):
     if method != "GET":
         raise ValidationError("Only GET method is allowed in Sprint014")
     
+    # 获取用户角色
+    user_role = user.get("role", "viewer") if user else "viewer"
+    
     # Device API
     if path == "/api/v1/devices":
+        check_permission_or_raise(user_role, "device.read")
         return handle_get_devices(context)
     
     if path.startswith("/api/v1/devices/"):
         device_id = path[len("/api/v1/devices/"):]
         if device_id:
+            check_permission_or_raise(user_role, "device.read")
             return handle_get_device(device_id, context)
     
     # Resource API
     if path == "/api/v1/resources":
+        check_permission_or_raise(user_role, "resource.read")
         device_id = query_params.get("device_id", "")
         return handle_get_resources(context, device_id)
     
     if path.startswith("/api/v1/resources/"):
         resource_id = path[len("/api/v1/resources/"):]
         if resource_id:
+            check_permission_or_raise(user_role, "resource.read")
             return handle_get_resource(resource_id, context)
     
     # Operation API
     if path == "/api/v1/operations":
+        check_permission_or_raise(user_role, "operation.read")
         return handle_get_operations(context)
     
     if path.startswith("/api/v1/operations/"):
         operation_id = path[len("/api/v1/operations/"):]
         if operation_id:
+            check_permission_or_raise(user_role, "operation.read")
             return handle_get_operation(operation_id, context)
     
     # Task API
     if path == "/api/v1/tasks":
+        check_permission_or_raise(user_role, "task.read")
         return handle_get_tasks(context)
     
     if path.startswith("/api/v1/tasks/"):
         task_id = path[len("/api/v1/tasks/"):]
         if task_id:
+            check_permission_or_raise(user_role, "task.read")
             return handle_get_task(task_id, context)
     
     # 404
     raise NotFoundError("Endpoint")
+
+
+def check_permission_or_raise(user_role, permission_key):
+    """
+    检查权限，如果没有权限则抛出 ForbiddenError
+    
+    Args:
+        user_role: 用户角色
+        permission_key: 权限键
+    """
+    if not check_permission(user_role, permission_key):
+        raise ForbiddenError(f"Permission denied: {permission_key}")
 
 
 def handle_get_devices(context):

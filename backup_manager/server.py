@@ -887,8 +887,19 @@ def make_handler(context: AppContext):
             # API v1 (Sprint014)
             if parsed.path.startswith("/api/v1/"):
                 try:
+                    # 获取当前用户 (Sprint015)
+                    session_id = self.get_cookie(SESSION_COOKIE_NAME)
+                    session = get_session(session_id)
+                    user = None
+                    if session:
+                        user = {
+                            "id": session.get("user_id"),
+                            "username": session.get("username"),
+                            "role": session.get("role"),
+                        }
+                    
                     query_params = {k: v[0] for k, v in parse_qs(parsed.query).items()}
-                    result = handle_api_request("GET", parsed.path, query_params, context)
+                    result = handle_api_request("GET", parsed.path, query_params, context, user)
                     self.send_json(result)
                 except ApiError as e:
                     self.send_json(error_response(e.code, e.message), HTTPStatus(e.status_code))
