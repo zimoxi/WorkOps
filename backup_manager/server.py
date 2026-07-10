@@ -43,6 +43,8 @@ from .device_repository import DeviceRepository
 from .device_service import DeviceService
 from .auth_service import validate_user, create_session, get_session, destroy_session, SESSION_COOKIE_NAME
 from .api import handle_api_request, ApiError, error_response
+from .repositories import MockDeviceRepository, MockResourceRepository, MockOperationRepository, MockTaskRepository
+from .services import DeviceService, ResourceService, OperationService, TaskService
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -137,6 +139,20 @@ class AppContext:
             {"id": "task-001", "operation_id": "op-001", "operation_name": "Daily Backup", "device_id": "dev-001", "status": "success", "start_time": "2026-07-04 02:00", "end_time": "2026-07-04 02:05:30", "duration": "5m30s"},
             {"id": "task-002", "operation_id": "op-002", "operation_name": "NAS Photos Backup", "device_id": "dev-002", "status": "success", "start_time": "2026-07-01 03:00", "end_time": "2026-07-01 03:15:00", "duration": "15m00s"},
         ]
+        
+        # Repository Layer (Sprint016)
+        # 包装现有 Mock 数据，不复制新数据
+        self._device_repo = MockDeviceRepository(self)
+        self._resource_repo = MockResourceRepository(self)
+        self._operation_repo = MockOperationRepository(self)
+        self._task_repo = MockTaskRepository(self)
+        
+        # Service Layer (Sprint016)
+        # 调用 Repository
+        self.api_device_service = DeviceService(self._device_repo)
+        self.api_resource_service = ResourceService(self._resource_repo)
+        self.api_operation_service = OperationService(self._operation_repo)
+        self.api_task_service = TaskService(self._task_repo)
 
 
 def runtime_flags_from_profile(profile_payload: dict[str, object]) -> dict[str, object]:

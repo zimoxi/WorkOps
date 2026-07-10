@@ -2,9 +2,11 @@
 WorkOps API Router — 路由分发
 Sprint014: API Layer Foundation
 Sprint015: Permission Foundation
+Sprint016: Repository Layer Foundation
 
 API 路由入口
 集成权限检查
+调用 Service Layer
 """
 
 from .response import success_response, list_response
@@ -95,61 +97,58 @@ def check_permission_or_raise(user_role, permission_key):
 
 
 def handle_get_devices(context):
-    """获取设备列表"""
-    devices = context.device_service.list_devices()
+    """获取设备列表 — 调用 Service"""
+    devices = context.api_device_service.get_all_devices()
     return list_response(devices)
 
 
 def handle_get_device(device_id, context):
-    """获取设备详情"""
-    device = context.device_service.get_device(device_id)
+    """获取设备详情 — 调用 Service"""
+    device = context.api_device_service.get_device_by_id(device_id)
     if not device:
         raise NotFoundError("Device")
     return success_response(device)
 
 
 def handle_get_resources(context, device_id=None):
-    """获取资源列表"""
-    resources = getattr(context, 'resources', [])
+    """获取资源列表 — 调用 Service"""
+    resources = context.api_resource_service.get_all_resources()
     if device_id:
         resources = [r for r in resources if r.get('device_id') == device_id]
     return list_response(resources)
 
 
 def handle_get_resource(resource_id, context):
-    """获取资源详情"""
-    resources = getattr(context, 'resources', [])
-    for resource in resources:
-        if resource.get('id') == resource_id:
-            return success_response(resource)
-    raise NotFoundError("Resource")
+    """获取资源详情 — 调用 Service"""
+    resource = context.api_resource_service.get_resource_by_id(resource_id)
+    if not resource:
+        raise NotFoundError("Resource")
+    return success_response(resource)
 
 
 def handle_get_operations(context):
-    """获取操作列表"""
-    operations = getattr(context, 'operations', [])
+    """获取操作列表 — 调用 Service"""
+    operations = context.api_operation_service.get_all_operations()
     return list_response(operations)
 
 
 def handle_get_operation(operation_id, context):
-    """获取操作详情"""
-    operations = getattr(context, 'operations', [])
-    for operation in operations:
-        if operation.get('id') == operation_id:
-            return success_response(operation)
-    raise NotFoundError("Operation")
+    """获取操作详情 — 调用 Service"""
+    operation = context.api_operation_service.get_operation_by_id(operation_id)
+    if not operation:
+        raise NotFoundError("Operation")
+    return success_response(operation)
 
 
 def handle_get_tasks(context):
-    """获取任务列表"""
-    tasks = getattr(context, 'tasks', [])
+    """获取任务列表 — 调用 Service"""
+    tasks = context.api_task_service.get_all_tasks()
     return list_response(tasks)
 
 
 def handle_get_task(task_id, context):
-    """获取任务详情"""
-    tasks = getattr(context, 'tasks', [])
-    for task in tasks:
-        if task.get('id') == task_id:
-            return success_response(task)
-    raise NotFoundError("Task")
+    """获取任务详情 — 调用 Service"""
+    task = context.api_task_service.get_task_by_id(task_id)
+    if not task:
+        raise NotFoundError("Task")
+    return success_response(task)
