@@ -1,6 +1,7 @@
 """
 WorkOps Repository Interfaces — Repository 接口定义
 Sprint016: Repository Layer Foundation
+Sprint018: Execution Engine Foundation
 
 定义统一 Repository 接口
 """
@@ -61,4 +62,19 @@ class TaskRepository(ABC):
     @abstractmethod
     def get_by_id(self, task_id: str) -> dict:
         """根据 ID 获取任务"""
+        pass
+
+    @abstractmethod
+    def transition_status(self, task_id: str, expected_status: str, new_status: str) -> bool:
+        """
+        原子状态转换
+        
+        Args:
+            task_id: Task ID
+            expected_status: 期望的当前状态
+            new_status: 新状态
+        
+        Returns:
+            bool: 转换是否成功
+        """
         pass
