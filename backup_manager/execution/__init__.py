@@ -10,6 +10,7 @@ from .errors import (
     ExecutionError,
     TaskNotFoundError,
     InvalidTaskStateError,
+    TaskStateTransitionError,
 )
 from .result import ExecutionResult
 from .context import ExecutionContext
@@ -19,6 +20,7 @@ __all__ = [
     "ExecutionError",
     "TaskNotFoundError",
     "InvalidTaskStateError",
+    "TaskStateTransitionError",
     "ExecutionResult",
     "ExecutionContext",
     "ExecutionService",

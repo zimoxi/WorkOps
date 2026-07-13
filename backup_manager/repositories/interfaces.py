@@ -67,7 +67,13 @@ class TaskRepository(ABC):
     @abstractmethod
     def transition_status(self, task_id: str, expected_status: str, new_status: str) -> bool:
         """
-        原子状态转换
+        原子状态转换（单进程 Mock 环境中的条件状态转换）
+        
+        合法转换：
+        - pending → running
+        - pending → cancelled
+        - running → success
+        - running → failed
         
         Args:
             task_id: Task ID

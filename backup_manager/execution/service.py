@@ -11,7 +11,7 @@ Task → ExecutionService → ExecutionContext → AdapterFactory.create("mock")
 """
 
 from datetime import datetime
-from .errors import TaskNotFoundError, InvalidTaskStateError
+from .errors import TaskNotFoundError, InvalidTaskStateError, TaskStateTransitionError
 from .result import ExecutionResult
 from .context import ExecutionContext
 from ..adapters import AdapterFactory
@@ -49,6 +49,7 @@ class ExecutionService:
         Raises:
             TaskNotFoundError: Task 不存在（前置错误）
             InvalidTaskStateError: Task 状态不是 pending（前置错误）
+            TaskStateTransitionError: Task 状态转换失败（前置/最终错误）
         """
         # ─── 前置检查（直接抛出，不修改 Task 状态）────────
         
@@ -63,16 +64,23 @@ class ExecutionService:
         if task.get("status") != "pending":
             raise InvalidTaskStateError(task_id, task.get("status"))
         
-        # 4. pending → running
+        # 4. pending → running（检查返回值）
         transitioned = self.task_repository.transition_status(
             task_id, "pending", "running"
         )
         if not transitioned:
-            raise InvalidTaskStateError(task_id, task.get("status"))
+            raise TaskStateTransitionError(task_id, "pending", "running")
         
-        # ─── 执行阶段（异常返回失败 ExecutionResult）──────
+        # ─── 执行阶段 ────────────────────────────────────
         
-        # 5. 创建 ExecutionContext（临时，不持久化）
+        # 5. 变量初始化
+        adapter = None
+        connected = False
+        adapter_result = None
+        primary_error = None
+        cleanup_error = None
+        
+        # 6. 创建 ExecutionContext（临时，不持久化）
         context = ExecutionContext(
             task_id=task_id,
             adapter_type="mock",
@@ -81,84 +89,82 @@ class ExecutionService:
             started_at=datetime.now()
         )
         
-        # 6. 创建 MockAdapter
-        adapter = self.adapter_factory.create("mock")
+        try:
+            # 7. Adapter 创建（在 try 内）
+            adapter = self.adapter_factory.create("mock")
+            
+            # 8. connect() 并检查返回值（必须严格返回 True）
+            connected = adapter.connect(context.device)
+            if connected is not True:
+                connected = False
+                raise AdapterNotConnectedError("connect() did not return True")
+            
+            # 9. execute()
+            adapter_result = adapter.execute(context.command)
+            
+            # 10. 检查返回值结构
+            if not isinstance(adapter_result, dict):
+                raise AdapterExecutionError("Adapter reported execution failure")
+            
+            if not adapter_result.get("success"):
+                raise AdapterExecutionError("Adapter reported execution failure")
+            
+        except Exception as error:
+            primary_error = error
         
-        connected = False
-        execution_result = None
+        # ─── disconnect（在 finally 中）──────────────────
         
         try:
-            # 7. connect()
-            adapter.connect(context.device)
-            connected = True
-            
-            # 8. execute()
-            result = adapter.execute(context.command)
-            
-            finished_at = datetime.now()
-            duration = str(finished_at - context.started_at)
-            
-            # 9. 生成 ExecutionResult
-            execution_result = ExecutionResult(
-                task_id=task_id,
-                status="success" if result.get("success") else "failed",
-                started_at=str(context.started_at),
-                finished_at=str(finished_at),
-                duration=duration,
-                stdout=result.get("stdout", ""),
-                stderr=result.get("stderr", ""),
-                exit_code=result.get("exit_code", 0),
-                message="Execution completed"
-            )
-            
-            # 10. running → success
-            self.task_repository.transition_status(task_id, "running", execution_result.status)
-            
-            return execution_result
-            
-        except Exception as e:
-            finished_at = datetime.now()
-            duration = str(finished_at - context.started_at)
-            
-            # 安全异常映射（不泄漏原始异常信息）
-            safe_message = f"Execution failed: {type(e).__name__}"
-            safe_stderr = f"Error type: {type(e).__name__}"
-            
-            execution_result = ExecutionResult(
-                task_id=task_id,
-                status="failed",
-                started_at=str(context.started_at),
-                finished_at=str(finished_at),
-                duration=duration,
-                stdout="",
-                stderr=safe_stderr,
-                exit_code=1,
-                message=safe_message
-            )
-            
-            # running → failed
-            try:
-                self.task_repository.transition_status(task_id, "running", "failed")
-            except:
-                pass  # 状态转换失败不覆盖主错误
-            
-            return execution_result
-            
-        finally:
-            # 11. disconnect
-            if connected:
-                try:
-                    adapter.disconnect()
-                except Exception as disconnect_error:
-                    # disconnect 失败
-                    if execution_result and execution_result.status == "success":
-                        # 主执行成功 + disconnect 失败 → 整体失败
-                        execution_result.status = "failed"
-                        execution_result.message = "Execution succeeded but disconnect failed"
-                        try:
-                            self.task_repository.transition_status(task_id, "success", "failed")
-                        except:
-                            pass
-                    else:
-                        # 主执行失败 + disconnect 失败 → 保留主错误
-                        pass
+            if connected and adapter is not None:
+                adapter.disconnect()
+        except Exception as error:
+            cleanup_error = error
+        
+        # ─── 统一判断最终状态（在 disconnect 后）──────────
+        
+        finished_at = datetime.now()
+        duration = str(finished_at - context.started_at)
+        
+        if primary_error is None and cleanup_error is None:
+            # execute 成功 + disconnect 成功 → success
+            final_status = "success"
+            safe_message = "Execution completed"
+            safe_stderr = adapter_result.get("stderr", "")
+            exit_code = adapter_result.get("exit_code", 0)
+            stdout = adapter_result.get("stdout", "")
+        elif primary_error is not None:
+            # execute 失败 → failed（保留主执行错误）
+            final_status = "failed"
+            safe_message = f"Execution failed: {type(primary_error).__name__}"
+            safe_stderr = f"Error type: {type(primary_error).__name__}"
+            exit_code = 1
+            stdout = ""
+        else:
+            # execute 成功 + disconnect 失败 → failed
+            final_status = "failed"
+            safe_message = "Execution succeeded but disconnect failed"
+            safe_stderr = f"Cleanup error: {type(cleanup_error).__name__}"
+            exit_code = 1
+            stdout = ""
+        
+        execution_result = ExecutionResult(
+            task_id=task_id,
+            status=final_status,
+            started_at=str(context.started_at),
+            finished_at=str(finished_at),
+            duration=duration,
+            stdout=stdout,
+            stderr=safe_stderr,
+            exit_code=exit_code,
+            message=safe_message
+        )
+        
+        # ─── 最终状态转换（必须成功）────────────────────
+        
+        transitioned = self.task_repository.transition_status(
+            task_id, "running", final_status
+        )
+        if not transitioned:
+            raise TaskStateTransitionError(task_id, "running", final_status)
+        
+        return execution_result

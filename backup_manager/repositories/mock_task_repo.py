@@ -13,6 +13,14 @@ from .interfaces import TaskRepository
 class MockTaskRepository(TaskRepository):
     """Mock Task Repository 实现"""
 
+    # 合法状态转换
+    ALLOWED_TRANSITIONS = {
+        ("pending", "running"),
+        ("pending", "cancelled"),
+        ("running", "success"),
+        ("running", "failed"),
+    }
+
     def __init__(self, context):
         """
         包装现有 AppContext 的 tasks
@@ -36,7 +44,13 @@ class MockTaskRepository(TaskRepository):
 
     def transition_status(self, task_id: str, expected_status: str, new_status: str) -> bool:
         """
-        原子状态转换（仅内存）
+        状态转换（单进程 Mock 环境中的条件状态转换）
+        
+        只允许合法转换：
+        - pending → running
+        - pending → cancelled
+        - running → success
+        - running → failed
         
         Args:
             task_id: Task ID
@@ -46,6 +60,10 @@ class MockTaskRepository(TaskRepository):
         Returns:
             bool: 转换是否成功
         """
+        # 检查是否为合法转换
+        if (expected_status, new_status) not in self.ALLOWED_TRANSITIONS:
+            return False
+        
         tasks = getattr(self.context, 'tasks', [])
         for task in tasks:
             if task.get('id') == task_id:

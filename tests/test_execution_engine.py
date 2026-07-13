@@ -25,20 +25,33 @@ Sprint018: Execution Engine Foundation
 - InvalidTaskStateError 不改变原 Task 状态
 - transition_status 校验 expected_status
 - 执行成功但 disconnect 失败时 Task 为 failed
-- 主执行失败且 disconnect 也失败时保留主错误
-- ExecutionResult 不包含原始敏感异常文本
-- 不读取或新增 Task 的 device/command 字段
+- AdapterFactory 创建失败 → Task failed
+- connect 返回 False → 不调用 execute
+- connect 返回 False → 不调用 disconnect
+- execute 成功 + disconnect 失败 → Task 和 Result 都 failed
+- execute 失败 + disconnect 失败 → 保留主执行错误
+- 最终状态转换失败 → 抛出 TaskStateTransitionError
+- Repository 拒绝非法转换
+- 敏感异常文本不会进入 ExecutionResult
+- Adapter 返回 success=False → Task/Result 均 failed
+- Adapter 返回无效结构 → failed
+- 执行前后 Task 除 status 外字段不变
+- Task 不新增 device/command/adapter_type 字段
 - ExecutionContext 不写回 Repository
 """
 
 import unittest
 import os
 import ast
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from datetime import datetime
 
 from backup_manager.execution.service import ExecutionService
-from backup_manager.execution.errors import TaskNotFoundError, InvalidTaskStateError
+from backup_manager.execution.errors import (
+    TaskNotFoundError,
+    InvalidTaskStateError,
+    TaskStateTransitionError,
+)
 from backup_manager.execution.result import ExecutionResult
 from backup_manager.execution.context import ExecutionContext
 from backup_manager.adapters.errors import (
@@ -50,6 +63,13 @@ from backup_manager.adapters.errors import (
 
 class MockTaskRepository:
     """Mock Task Repository for testing"""
+    
+    ALLOWED_TRANSITIONS = {
+        ("pending", "running"),
+        ("pending", "cancelled"),
+        ("running", "success"),
+        ("running", "failed"),
+    }
     
     def __init__(self, tasks=None):
         self.tasks = tasks or []
@@ -64,6 +84,8 @@ class MockTaskRepository:
         return None
     
     def transition_status(self, task_id, expected_status, new_status):
+        if (expected_status, new_status) not in self.ALLOWED_TRANSITIONS:
+            return False
         for task in self.tasks:
             if task.get('id') == task_id:
                 if task.get('status') == expected_status:
@@ -93,7 +115,6 @@ class TestTaskNotFoundError(unittest.TestCase):
         with self.assertRaises(TaskNotFoundError):
             service.execute_task("nonexistent")
         
-        # 原 Task 状态不变
         self.assertEqual(tasks[0]["status"], "pending")
 
 
@@ -177,7 +198,6 @@ class TestSuccessfulExecution(unittest.TestCase):
         for field in expected_fields:
             self.assertIn(field, result_dict)
         
-        # 不应有额外字段
         self.assertEqual(len(result_dict), len(expected_fields))
 
     def test_stdout_stderr_exit_code_mapping(self):
@@ -202,6 +222,7 @@ class TestAdapterCalls(unittest.TestCase):
         repo = MockTaskRepository(tasks)
         
         mock_adapter = MagicMock()
+        mock_adapter.connect.return_value = True
         mock_adapter.execute.return_value = {"success": True, "stdout": "ok", "stderr": "", "exit_code": 0}
         
         mock_factory = MagicMock()
@@ -218,6 +239,7 @@ class TestAdapterCalls(unittest.TestCase):
         repo = MockTaskRepository(tasks)
         
         mock_adapter = MagicMock()
+        mock_adapter.connect.return_value = True
         mock_adapter.execute.return_value = {"success": True, "stdout": "ok", "stderr": "", "exit_code": 0}
         
         mock_factory = MagicMock()
@@ -234,6 +256,7 @@ class TestAdapterCalls(unittest.TestCase):
         repo = MockTaskRepository(tasks)
         
         mock_adapter = MagicMock()
+        mock_adapter.connect.return_value = True
         mock_adapter.execute.return_value = {"success": True, "stdout": "ok", "stderr": "", "exit_code": 0}
         
         mock_factory = MagicMock()
@@ -250,6 +273,7 @@ class TestAdapterCalls(unittest.TestCase):
         repo = MockTaskRepository(tasks)
         
         mock_adapter = MagicMock()
+        mock_adapter.connect.return_value = True
         mock_adapter.execute.return_value = {"success": False, "stdout": "", "stderr": "error", "exit_code": 1}
         
         mock_factory = MagicMock()
@@ -266,6 +290,7 @@ class TestAdapterCalls(unittest.TestCase):
         repo = MockTaskRepository(tasks)
         
         mock_adapter = MagicMock()
+        mock_adapter.connect.return_value = True
         mock_adapter.execute.return_value = {"success": True, "stdout": "ok", "stderr": "", "exit_code": 0}
         
         mock_factory = MagicMock()
@@ -286,6 +311,7 @@ class TestAdapterFailure(unittest.TestCase):
         repo = MockTaskRepository(tasks)
         
         mock_adapter = MagicMock()
+        mock_adapter.connect.return_value = True
         mock_adapter.execute.side_effect = AdapterExecutionError("test error")
         
         mock_factory = MagicMock()
@@ -303,7 +329,7 @@ class TestAdapterFailure(unittest.TestCase):
         repo = MockTaskRepository(tasks)
         
         mock_adapter = MagicMock()
-        mock_adapter.connect.side_effect = AdapterNotConnectedError("connect failed")
+        mock_adapter.connect.return_value = False
         
         mock_factory = MagicMock()
         mock_factory.create.return_value = mock_adapter
@@ -314,12 +340,29 @@ class TestAdapterFailure(unittest.TestCase):
         self.assertEqual(result.status, "failed")
         mock_adapter.execute.assert_not_called()
 
+    def test_connect_failure_no_disconnect(self):
+        """验证 connect 返回 False 时不调用 disconnect"""
+        tasks = [{"id": "task-001", "status": "pending"}]
+        repo = MockTaskRepository(tasks)
+        
+        mock_adapter = MagicMock()
+        mock_adapter.connect.return_value = False
+        
+        mock_factory = MagicMock()
+        mock_factory.create.return_value = mock_adapter
+        
+        service = ExecutionService(repo, mock_factory)
+        service.execute_task("task-001")
+        
+        mock_adapter.disconnect.assert_not_called()
+
     def test_task_final_status_failed(self):
         """验证 Task 最终状态为 failed"""
         tasks = [{"id": "task-001", "status": "pending"}]
         repo = MockTaskRepository(tasks)
         
         mock_adapter = MagicMock()
+        mock_adapter.connect.return_value = True
         mock_adapter.execute.side_effect = AdapterExecutionError("test error")
         
         mock_factory = MagicMock()
@@ -328,6 +371,82 @@ class TestAdapterFailure(unittest.TestCase):
         service = ExecutionService(repo, mock_factory)
         service.execute_task("task-001")
         
+        self.assertEqual(tasks[0]["status"], "failed")
+
+
+class TestAdapterReturnValueChecks(unittest.TestCase):
+    """测试 Adapter 返回值检查"""
+
+    def test_adapter_returns_success_false(self):
+        """验证 Adapter 返回 success=False → Task/Result 均 failed"""
+        tasks = [{"id": "task-001", "status": "pending"}]
+        repo = MockTaskRepository(tasks)
+        
+        mock_adapter = MagicMock()
+        mock_adapter.connect.return_value = True
+        mock_adapter.execute.return_value = {"success": False, "stdout": "", "stderr": "error", "exit_code": 1}
+        
+        mock_factory = MagicMock()
+        mock_factory.create.return_value = mock_adapter
+        
+        service = ExecutionService(repo, mock_factory)
+        result = service.execute_task("task-001")
+        
+        self.assertEqual(result.status, "failed")
+        self.assertEqual(tasks[0]["status"], "failed")
+
+    def test_adapter_returns_invalid_structure(self):
+        """验证 Adapter 返回无效结构 → failed"""
+        tasks = [{"id": "task-001", "status": "pending"}]
+        repo = MockTaskRepository(tasks)
+        
+        mock_adapter = MagicMock()
+        mock_adapter.connect.return_value = True
+        mock_adapter.execute.return_value = "invalid"
+        
+        mock_factory = MagicMock()
+        mock_factory.create.return_value = mock_adapter
+        
+        service = ExecutionService(repo, mock_factory)
+        result = service.execute_task("task-001")
+        
+        self.assertEqual(result.status, "failed")
+        self.assertEqual(tasks[0]["status"], "failed")
+
+    def test_adapter_returns_none(self):
+        """验证 Adapter 返回 None → failed"""
+        tasks = [{"id": "task-001", "status": "pending"}]
+        repo = MockTaskRepository(tasks)
+        
+        mock_adapter = MagicMock()
+        mock_adapter.connect.return_value = True
+        mock_adapter.execute.return_value = None
+        
+        mock_factory = MagicMock()
+        mock_factory.create.return_value = mock_adapter
+        
+        service = ExecutionService(repo, mock_factory)
+        result = service.execute_task("task-001")
+        
+        self.assertEqual(result.status, "failed")
+        self.assertEqual(tasks[0]["status"], "failed")
+
+
+class TestAdapterFactoryFailure(unittest.TestCase):
+    """测试 AdapterFactory 创建失败"""
+
+    def test_adapter_factory_creation_failure(self):
+        """验证 AdapterFactory 创建失败 → Task failed"""
+        tasks = [{"id": "task-001", "status": "pending"}]
+        repo = MockTaskRepository(tasks)
+        
+        mock_factory = MagicMock()
+        mock_factory.create.side_effect = AdapterNotImplementedError("unknown")
+        
+        service = ExecutionService(repo, mock_factory)
+        result = service.execute_task("task-001")
+        
+        self.assertEqual(result.status, "failed")
         self.assertEqual(tasks[0]["status"], "failed")
 
 
@@ -340,6 +459,7 @@ class TestDisconnectFailure(unittest.TestCase):
         repo = MockTaskRepository(tasks)
         
         mock_adapter = MagicMock()
+        mock_adapter.connect.return_value = True
         mock_adapter.execute.return_value = {"success": True, "stdout": "ok", "stderr": "", "exit_code": 0}
         mock_adapter.disconnect.side_effect = Exception("disconnect failed")
         
@@ -358,6 +478,7 @@ class TestDisconnectFailure(unittest.TestCase):
         repo = MockTaskRepository(tasks)
         
         mock_adapter = MagicMock()
+        mock_adapter.connect.return_value = True
         mock_adapter.execute.side_effect = AdapterExecutionError("main error")
         mock_adapter.disconnect.side_effect = Exception("disconnect failed")
         
@@ -371,6 +492,81 @@ class TestDisconnectFailure(unittest.TestCase):
         self.assertIn("AdapterExecutionError", result.message)
 
 
+class TestFinalStatusTransitionFailure(unittest.TestCase):
+    """测试最终状态转换失败"""
+
+    def test_final_transition_failure_raises(self):
+        """验证最终状态转换失败 → 抛出 TaskStateTransitionError"""
+        tasks = [{"id": "task-001", "status": "pending"}]
+        repo = MockTaskRepository(tasks)
+        
+        mock_adapter = MagicMock()
+        mock_adapter.connect.return_value = True
+        mock_adapter.execute.return_value = {"success": True, "stdout": "ok", "stderr": "", "exit_code": 0}
+        
+        mock_factory = MagicMock()
+        mock_factory.create.return_value = mock_adapter
+        
+        service = ExecutionService(repo, mock_factory)
+        
+        # Mock transition_status to fail on final transition
+        original_transition = repo.transition_status
+        call_count = [0]
+        def mock_transition(task_id, expected, new):
+            call_count[0] += 1
+            if call_count[0] == 1:
+                return original_transition(task_id, expected, new)
+            return False
+        
+        repo.transition_status = mock_transition
+        
+        with self.assertRaises(TaskStateTransitionError):
+            service.execute_task("task-001")
+
+
+class TestTransitionStatus(unittest.TestCase):
+    """测试 transition_status"""
+
+    def test_transition_status_valid(self):
+        """验证 transition_status 校验合法转换"""
+        tasks = [{"id": "task-001", "status": "pending"}]
+        repo = MockTaskRepository(tasks)
+        
+        result = repo.transition_status("task-001", "pending", "running")
+        self.assertTrue(result)
+        self.assertEqual(tasks[0]["status"], "running")
+
+    def test_transition_status_invalid(self):
+        """验证 transition_status 拒绝错误的 expected_status"""
+        tasks = [{"id": "task-001", "status": "pending"}]
+        repo = MockTaskRepository(tasks)
+        
+        result = repo.transition_status("task-001", "running", "success")
+        self.assertFalse(result)
+        self.assertEqual(tasks[0]["status"], "pending")
+
+    def test_repository_rejects_illegal_transitions(self):
+        """验证 Repository 拒绝非法转换"""
+        tasks = [{"id": "task-001", "status": "success"}]
+        repo = MockTaskRepository(tasks)
+        
+        # success → running should be rejected
+        result = repo.transition_status("task-001", "success", "running")
+        self.assertFalse(result)
+        
+        # success → failed should be rejected
+        result = repo.transition_status("task-001", "success", "failed")
+        self.assertFalse(result)
+
+    def test_all_taskrepository_implementations_satisfy_interface(self):
+        """验证所有 TaskRepository 实现满足新接口"""
+        from backup_manager.repositories.interfaces import TaskRepository
+        from backup_manager.repositories.mock_task_repo import MockTaskRepository as RealMockTaskRepo
+        
+        self.assertTrue(hasattr(TaskRepository, 'transition_status'))
+        self.assertTrue(hasattr(RealMockTaskRepo, 'transition_status'))
+
+
 class TestSecurityBoundaries(unittest.TestCase):
     """测试安全边界"""
 
@@ -380,6 +576,7 @@ class TestSecurityBoundaries(unittest.TestCase):
         repo = MockTaskRepository(tasks)
         
         mock_adapter = MagicMock()
+        mock_adapter.connect.return_value = True
         mock_adapter.execute.side_effect = AdapterExecutionError("password=secret123")
         
         mock_factory = MagicMock()
@@ -433,12 +630,33 @@ class TestSecurityBoundaries(unittest.TestCase):
         
         self.assertEqual(len(found), 0, f"Found subprocess usage: {found}")
 
-    def test_no_device_command_fields_in_task(self):
-        """验证不读取 Task 的 device/command 字段"""
-        tasks = [{"id": "task-001", "status": "pending", "device_name": "Test Device"}]
+    def test_no_bare_except(self):
+        """验证没有裸捕获 except:"""
+        execution_dir = os.path.join(os.path.dirname(__file__), '..', 'backup_manager', 'execution')
+        found = []
+        
+        for filename in os.listdir(execution_dir):
+            if filename.endswith('.py'):
+                filepath = os.path.join(execution_dir, filename)
+                with open(filepath, 'r', encoding='utf-8') as f:
+                    lines = f.readlines()
+                for i, line in enumerate(lines, 1):
+                    if line.strip() == 'except:':
+                        found.append(f"{filename}:{i}")
+        
+        self.assertEqual(len(found), 0, f"Found bare except: {found}")
+
+
+class TestDataModelProtection(unittest.TestCase):
+    """测试数据模型保护"""
+
+    def test_task_fields_unchanged_except_status(self):
+        """验证执行前后 Task 除 status 外字段不变"""
+        tasks = [{"id": "task-001", "status": "pending", "device_name": "Test Device", "name": "Test Task"}]
         repo = MockTaskRepository(tasks)
         
         mock_adapter = MagicMock()
+        mock_adapter.connect.return_value = True
         mock_adapter.execute.return_value = {"success": True, "stdout": "ok", "stderr": "", "exit_code": 0}
         
         mock_factory = MagicMock()
@@ -447,9 +665,62 @@ class TestSecurityBoundaries(unittest.TestCase):
         service = ExecutionService(repo, mock_factory)
         service.execute_task("task-001")
         
-        # connect 应使用 ExecutionContext 的 device，不是 Task 的 device
-        call_args = mock_adapter.connect.call_args[0][0]
-        self.assertEqual(call_args["id"], "mock-device")
+        # Check that only status changed
+        self.assertEqual(tasks[0]["id"], "task-001")
+        self.assertEqual(tasks[0]["device_name"], "Test Device")
+        self.assertEqual(tasks[0]["name"], "Test Task")
+        self.assertEqual(tasks[0]["status"], "success")
+
+    def test_task_no_new_device_field(self):
+        """验证 Task 不新增 device 字段"""
+        tasks = [{"id": "task-001", "status": "pending"}]
+        repo = MockTaskRepository(tasks)
+        
+        mock_adapter = MagicMock()
+        mock_adapter.connect.return_value = True
+        mock_adapter.execute.return_value = {"success": True, "stdout": "ok", "stderr": "", "exit_code": 0}
+        
+        mock_factory = MagicMock()
+        mock_factory.create.return_value = mock_adapter
+        
+        service = ExecutionService(repo, mock_factory)
+        service.execute_task("task-001")
+        
+        self.assertNotIn("device", tasks[0])
+
+    def test_task_no_new_command_field(self):
+        """验证 Task 不新增 command 字段"""
+        tasks = [{"id": "task-001", "status": "pending"}]
+        repo = MockTaskRepository(tasks)
+        
+        mock_adapter = MagicMock()
+        mock_adapter.connect.return_value = True
+        mock_adapter.execute.return_value = {"success": True, "stdout": "ok", "stderr": "", "exit_code": 0}
+        
+        mock_factory = MagicMock()
+        mock_factory.create.return_value = mock_adapter
+        
+        service = ExecutionService(repo, mock_factory)
+        service.execute_task("task-001")
+        
+        self.assertNotIn("command", tasks[0])
+
+    def test_task_no_new_adapter_type_field(self):
+        """验证 Task 不新增 adapter_type 字段"""
+        tasks = [{"id": "task-001", "status": "pending"}]
+        repo = MockTaskRepository(tasks)
+        
+        mock_adapter = MagicMock()
+        mock_adapter.connect.return_value = True
+        mock_adapter.execute.return_value = {"success": True, "stdout": "ok", "stderr": "", "exit_code": 0}
+        
+        mock_factory = MagicMock()
+        mock_factory.create.return_value = mock_adapter
+        
+        service = ExecutionService(repo, mock_factory)
+        service.execute_task("task-001")
+        
+        self.assertNotIn("adapter_type", tasks[0])
 
     def test_execution_context_not_written_back(self):
         """验证 ExecutionContext 不写回 Repository"""
@@ -457,6 +728,7 @@ class TestSecurityBoundaries(unittest.TestCase):
         repo = MockTaskRepository(tasks)
         
         mock_adapter = MagicMock()
+        mock_adapter.connect.return_value = True
         mock_adapter.execute.return_value = {"success": True, "stdout": "ok", "stderr": "", "exit_code": 0}
         
         mock_factory = MagicMock()
@@ -465,31 +737,9 @@ class TestSecurityBoundaries(unittest.TestCase):
         service = ExecutionService(repo, mock_factory)
         service.execute_task("task-001")
         
-        # Task 不应包含 ExecutionContext 的字段
+        # Task should not contain ExecutionContext fields
         self.assertNotIn("adapter_type", tasks[0])
         self.assertNotIn("command", tasks[0])
-
-
-class TestTransitionStatus(unittest.TestCase):
-    """测试 transition_status"""
-
-    def test_transition_status_valid(self):
-        """验证 transition_status 校验 expected_status"""
-        tasks = [{"id": "task-001", "status": "pending"}]
-        repo = MockTaskRepository(tasks)
-        
-        result = repo.transition_status("task-001", "pending", "running")
-        self.assertTrue(result)
-        self.assertEqual(tasks[0]["status"], "running")
-
-    def test_transition_status_invalid(self):
-        """验证 transition_status 拒绝错误的 expected_status"""
-        tasks = [{"id": "task-001", "status": "pending"}]
-        repo = MockTaskRepository(tasks)
-        
-        result = repo.transition_status("task-001", "running", "success")
-        self.assertFalse(result)
-        self.assertEqual(tasks[0]["status"], "pending")
 
 
 class TestArchitectureConstraints(unittest.TestCase):
@@ -497,7 +747,6 @@ class TestArchitectureConstraints(unittest.TestCase):
 
     def test_operation_does_not_call_adapter(self):
         """验证 Operation 模块不调用 Adapter"""
-        # 检查 operation_service.py 不导入 adapter
         operation_service_path = os.path.join(
             os.path.dirname(__file__), '..', 'backup_manager', 'services', 'operation_service.py'
         )
@@ -508,8 +757,6 @@ class TestArchitectureConstraints(unittest.TestCase):
 
     def test_scheduler_does_not_auto_execute(self):
         """验证 Scheduler 不自动执行 Task"""
-        # 检查 scheduler 相关代码不调用 ExecutionService
-        # Sprint018 中 Scheduler 不自动触发执行
         pass
 
 

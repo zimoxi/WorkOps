@@ -5,6 +5,7 @@ Sprint018: Execution Engine Foundation
 前置错误（直接抛出，不修改 Task 状态）：
 - TaskNotFoundError
 - InvalidTaskStateError
+- TaskStateTransitionError
 
 执行错误（返回失败 ExecutionResult，Task 更新为 failed）：
 - AdapterNotConnectedError
@@ -32,3 +33,12 @@ class InvalidTaskStateError(ExecutionError):
         super().__init__(f"Task {task_id} has invalid status: {current_status}")
         self.task_id = task_id
         self.current_status = current_status
+
+
+class TaskStateTransitionError(ExecutionError):
+    """Task 状态转换失败（前置/最终错误）"""
+    def __init__(self, task_id, expected_status, new_status):
+        super().__init__(f"Failed to transition task {task_id}: {expected_status} -> {new_status}")
+        self.task_id = task_id
+        self.expected_status = expected_status
+        self.new_status = new_status
