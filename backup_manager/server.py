@@ -44,7 +44,12 @@ from .device_service import DeviceService
 from .auth_service import validate_user, create_session, get_session, destroy_session, SESSION_COOKIE_NAME
 from .api import handle_api_request, ApiError, error_response
 from .repositories import MockDeviceRepository, MockResourceRepository, MockOperationRepository, MockTaskRepository
-from .services import DeviceService, ResourceService, OperationService, TaskService
+from .services import (
+    DeviceService as ApiDeviceService,
+    ResourceService,
+    OperationService,
+    TaskService,
+)
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -121,8 +126,8 @@ class AppContext:
         self.running_jobs: dict[str, dict[str, Any]] = {}
         self.job_payloads: dict[str, dict[str, Any]] = {}
         # Device domain (Sprint002)
-        device_repo = DeviceRepository(data_dir / "workops.db")
-        self.device_service = DeviceService(device_repo)
+        self._sqlite_device_repo = DeviceRepository(data_dir / "workops.db")
+        self.device_service = DeviceService(self._sqlite_device_repo)
         self.device_service.ensure_mock_data()
         
         # Mock data for API Layer (Sprint014)
@@ -149,10 +154,22 @@ class AppContext:
         
         # Service Layer (Sprint016)
         # 调用 Repository
-        self.api_device_service = DeviceService(self._device_repo)
+        self.api_device_service = ApiDeviceService(self._device_repo)
         self.api_resource_service = ResourceService(self._resource_repo)
         self.api_operation_service = OperationService(self._operation_repo)
         self.api_task_service = TaskService(self._task_repo)
+
+    def close(self) -> None:
+        """Close database connections. Idempotent."""
+        if hasattr(self, '_sqlite_device_repo'):
+            self._sqlite_device_repo.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        return False
 
 
 def runtime_flags_from_profile(profile_payload: dict[str, object]) -> dict[str, object]:

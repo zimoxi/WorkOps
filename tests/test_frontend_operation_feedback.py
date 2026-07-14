@@ -27,6 +27,9 @@ class FrontendOperationFeedbackTests(unittest.TestCase):
             const vm = require("vm");
             const path = require("path");
 
+            const i18nSource = fs
+              .readFileSync(path.join(process.cwd(), "static", "i18n.js"), "utf8");
+
             const source = fs
               .readFileSync(path.join(process.cwd(), "static", "app.js"), "utf8")
               .replace(/init\\(\\)\\.catch\\([\\s\\S]*?\\);\\s*$/, "");
@@ -92,6 +95,7 @@ class FrontendOperationFeedbackTests(unittest.TestCase):
             }};
 
             vm.createContext(context);
+            vm.runInContext(i18nSource, context);
             vm.runInContext(source + `\\n{extra_js}`, context);
             """
         )

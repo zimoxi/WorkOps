@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sqlite3
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -17,10 +18,19 @@ class DeviceRepository:
         self._db_path = db_path
         self._ensure_table()
 
-    def _connect(self) -> sqlite3.Connection:
+    @contextmanager
+    def _connect(self):
+        """Context manager that opens and CLOSES the connection."""
         conn = sqlite3.connect(str(self._db_path))
         conn.row_factory = sqlite3.Row
-        return conn
+        try:
+            yield conn
+        finally:
+            conn.close()
+
+    def close(self) -> None:
+        """No-op for compatibility. Connections are closed per-operation."""
+        pass
 
     def _ensure_table(self) -> None:
         with self._connect() as conn:
