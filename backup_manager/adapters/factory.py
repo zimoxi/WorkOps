@@ -2,9 +2,9 @@
 WorkOps AdapterFactory — Adapter 工厂方法
 Sprint017: Device Adapter Foundation
 Sprint022: 新增 ssh_readonly 类型
+Sprint023: 注册到 AdapterRegistry
 
 只暴露 create(adapter_type)
-暂不实现 register()
 """
 
 from .mock_adapter import MockAdapter
@@ -67,3 +67,34 @@ class AdapterFactory:
         if not adapter_class:
             raise AdapterNotImplementedError(f"Unknown adapter type: {adapter_type}")
         return adapter_class()
+
+    @classmethod
+    def register_to_registry(cls, registry) -> None:
+        """
+        注册内置 Adapter 到 AdapterRegistry。
+
+        只注册 mock 和 ssh_readonly。
+        """
+        from .capabilities import AdapterCapability
+        from .descriptor import AdapterDescriptor
+
+        # Mock
+        mock_desc = AdapterDescriptor(
+            adapter_type="mock",
+            capabilities=frozenset({AdapterCapability.STATUS_QUERY}),
+            readonly=True,
+        )
+        registry.register(mock_desc, MockAdapter)
+
+        # SSH ReadOnly
+        from .ssh_readonly_adapter import SSHReadOnlyAdapter
+
+        ssh_desc = AdapterDescriptor(
+            adapter_type="ssh_readonly",
+            capabilities=frozenset({
+                AdapterCapability.STATUS_QUERY,
+                AdapterCapability.SYSTEM_QUERY,
+            }),
+            readonly=True,
+        )
+        registry.register(ssh_desc, SSHReadOnlyAdapter)
