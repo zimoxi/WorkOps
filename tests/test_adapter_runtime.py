@@ -55,6 +55,10 @@ class TestAdapterCapability(unittest.TestCase):
         self.assertIsInstance(AdapterCapability.STATUS_QUERY, AdapterCapability)
         self.assertEqual(len(AdapterCapability), 2)
 
+    def test_enum_comparison(self):
+        self.assertIsNot(AdapterCapability.STATUS_QUERY, AdapterCapability.SYSTEM_QUERY)
+        self.assertEqual(AdapterCapability("status_query"), AdapterCapability.STATUS_QUERY)
+
 
 # ============================================================================
 # AdapterDescriptor
@@ -182,6 +186,10 @@ class TestAdapterRegistry(unittest.TestCase):
         self.registry.register(self.desc, MockAdapter)
         self.assertTrue(self.registry.is_registered("mock"))
 
+    def test_register_non_descriptor_rejected(self):
+        with self.assertRaises(TypeError):
+            self.registry.register("not_a_descriptor", MockAdapter)
+
 
 # ============================================================================
 # AdapterSession
@@ -240,6 +248,18 @@ class TestAdapterSession(unittest.TestCase):
         self.assertIsNotNone(session.created_at)
         self.assertIsNone(session.connected_at)
         self.assertIsNone(session.closed_at)
+
+    def test_device_id_preserved(self):
+        session = AdapterSession(adapter_type="ssh_readonly", device_id="192.168.1.1")
+        self.assertEqual(session.device_id, "192.168.1.1")
+        session.transition(SessionState.CONNECTED)
+        self.assertEqual(session.device_id, "192.168.1.1")
+
+    def test_adapter_type_preserved(self):
+        session = AdapterSession(adapter_type="ssh_readonly", device_id="dev-1")
+        self.assertEqual(session.adapter_type, "ssh_readonly")
+        session.transition(SessionState.CLOSED)
+        self.assertEqual(session.adapter_type, "ssh_readonly")
 
 
 # ============================================================================
@@ -459,6 +479,21 @@ class TestSecurityBoundary(unittest.TestCase):
                 func = node.func
                 if isinstance(func, ast.Name) and func.id in ("__import__", "import_module"):
                     self.fail("registry uses dynamic import")
+
+    def test_runtime_repr_no_secrets(self):
+        """Runtime repr 不泄漏 secret"""
+        registry = AdapterRegistry()
+        desc = AdapterDescriptor(
+            adapter_type="mock",
+            capabilities=frozenset({AdapterCapability.STATUS_QUERY}),
+            readonly=True,
+        )
+        registry.register(desc, MockAdapter)
+        runtime = AdapterRuntime(registry)
+        r = repr(runtime)
+        self.assertNotIn("password", r.lower())
+        self.assertNotIn("secret", r.lower())
+        self.assertNotIn("token", r.lower())
 
 
 # ============================================================================
