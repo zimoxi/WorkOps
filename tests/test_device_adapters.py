@@ -236,10 +236,13 @@ class TestNoRealConnectionLibraries(unittest.TestCase):
     """测试禁止真实连接库"""
 
     def test_no_paramiko_import(self):
-        """验证未导入 paramiko"""
+        """验证占位 Adapter 未导入 paramiko"""
+        # Sprint022 ssh_paramiko_client.py 和 ssh_readonly_adapter.py
+        # 合法使用 paramiko，不在此检查范围
+        excluded = {'ssh_paramiko_client.py', 'ssh_readonly_adapter.py'}
         adapters_dir = os.path.join(os.path.dirname(__file__), '..', 'backup_manager', 'adapters')
         for filename in os.listdir(adapters_dir):
-            if filename.endswith('.py'):
+            if filename.endswith('.py') and filename not in excluded:
                 filepath = os.path.join(adapters_dir, filename)
                 with open(filepath, 'r', encoding='utf-8') as f:
                     content = f.read()

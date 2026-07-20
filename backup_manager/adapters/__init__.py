@@ -1,9 +1,7 @@
 """
 WorkOps Device Adapter Layer
 Sprint017: Device Adapter Foundation
-
-建立 Device Adapter 抽象层
-独立于 TaskService，未来 Sprint018 才接入
+Sprint022: 新增 SSH ReadOnly Adapter
 """
 
 from .base import BaseAdapter
@@ -18,6 +16,17 @@ from .errors import (
     AdapterNotImplementedError,
     AdapterExecutionError,
 )
+from .ssh_errors import (
+    SSHAdapterError,
+    SSHConfigurationError,
+    SSHAuthenticationError,
+    SSHHostKeyError,
+    SSHConnectionError,
+    SSHTimeoutError,
+    SSHQueryNotAllowedError,
+    SSHQueryExecutionError,
+)
+from .ssh_readonly_adapter import SSHReadOnlyAdapter
 
 __all__ = [
     "BaseAdapter",
@@ -30,4 +39,13 @@ __all__ = [
     "AdapterNotConnectedError",
     "AdapterNotImplementedError",
     "AdapterExecutionError",
+    "SSHAdapterError",
+    "SSHConfigurationError",
+    "SSHAuthenticationError",
+    "SSHHostKeyError",
+    "SSHConnectionError",
+    "SSHTimeoutError",
+    "SSHQueryNotAllowedError",
+    "SSHQueryExecutionError",
+    "SSHReadOnlyAdapter",
 ]
