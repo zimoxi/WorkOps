@@ -56,6 +56,16 @@ from .pve import (
     PVEStatus,
     PVEClient,
 )
+from .omv_adapter import OMVAdapter
+from .omv import (
+    OMVAdapterError,
+    OMVQueryError,
+    OMVUnsupportedOperationError,
+    OMVSystemInfo,
+    OMVStorageInfo,
+    OMVStatus,
+    OMVClient,
+)
 
 __all__ = [
     "BaseAdapter",
@@ -103,4 +113,12 @@ __all__ = [
     "PVEStorageInfo",
     "PVEStatus",
     "PVEClient",
+    "OMVAdapter",
+    "OMVAdapterError",
+    "OMVQueryError",
+    "OMVUnsupportedOperationError",
+    "OMVSystemInfo",
+    "OMVStorageInfo",
+    "OMVStatus",
+    "OMVClient",
 ]
