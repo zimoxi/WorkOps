@@ -46,6 +46,16 @@ from .result import AdapterQueryResult
 from .capability import AdapterCapabilityDeclaration
 from .capability_registry import AdapterCapabilityRegistry
 from .contracts import AdapterCapabilityProvider
+from .pve_adapter import PVEAdapter
+from .pve import (
+    PVEAdapterError,
+    PVEQueryError,
+    PVEUnsupportedOperationError,
+    PVENodeInfo,
+    PVEStorageInfo,
+    PVEStatus,
+    PVEClient,
+)
 
 __all__ = [
     "BaseAdapter",
@@ -85,4 +95,12 @@ __all__ = [
     "AdapterCapabilityDeclaration",
     "AdapterCapabilityRegistry",
     "AdapterCapabilityProvider",
+    "PVEAdapter",
+    "PVEAdapterError",
+    "PVEQueryError",
+    "PVEUnsupportedOperationError",
+    "PVENodeInfo",
+    "PVEStorageInfo",
+    "PVEStatus",
+    "PVEClient",
 ]
