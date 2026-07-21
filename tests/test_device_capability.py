@@ -315,6 +315,69 @@ class TestCapabilityMatcher(unittest.TestCase):
 
 
 # ============================================================================
+# DeviceCapabilityRegistry
+# ============================================================================
+
+class TestDeviceCapabilityRegistry(unittest.TestCase):
+    """设备能力注册表测试"""
+
+    def setUp(self):
+        from backup_manager.devices.registry import DeviceCapabilityRegistry
+        self.registry = DeviceCapabilityRegistry()
+
+    def test_register_and_get(self):
+        self.registry.register(
+            DeviceType.SERVER,
+            (DeviceCapability.STATUS_QUERY, DeviceCapability.SYSTEM_INFO),
+        )
+        caps = self.registry.get(DeviceType.SERVER)
+        self.assertIn(DeviceCapability.STATUS_QUERY, caps)
+        self.assertIn(DeviceCapability.SYSTEM_INFO, caps)
+
+    def test_duplicate_rejected(self):
+        from backup_manager.devices.errors import CapabilityConflictError
+        self.registry.register(DeviceType.SERVER, (DeviceCapability.STATUS_QUERY,))
+        with self.assertRaises(CapabilityConflictError):
+            self.registry.register(DeviceType.SERVER, (DeviceCapability.SYSTEM_INFO,))
+
+    def test_get_unknown_rejected(self):
+        from backup_manager.devices.errors import CapabilityNotFoundError
+        with self.assertRaises(CapabilityNotFoundError):
+            self.registry.get(DeviceType.NAS)
+
+    def test_list(self):
+        self.registry.register(DeviceType.SERVER, (DeviceCapability.STATUS_QUERY,))
+        self.registry.register(DeviceType.NAS, (DeviceCapability.STORAGE_QUERY,))
+        all_types = self.registry.list()
+        self.assertEqual(len(all_types), 2)
+
+    def test_supports_true(self):
+        self.registry.register(
+            DeviceType.SERVER,
+            (DeviceCapability.STATUS_QUERY, DeviceCapability.SYSTEM_INFO),
+        )
+        self.assertTrue(self.registry.supports(DeviceType.SERVER, DeviceCapability.STATUS_QUERY))
+
+    def test_supports_false(self):
+        self.registry.register(DeviceType.SERVER, (DeviceCapability.STATUS_QUERY,))
+        self.assertFalse(self.registry.supports(DeviceType.SERVER, DeviceCapability.BACKUP_SOURCE))
+
+    def test_supports_unregistered(self):
+        self.assertFalse(self.registry.supports(DeviceType.NAS, DeviceCapability.STATUS_QUERY))
+
+    def test_no_dynamic_loading(self):
+        """确认 registry 不使用动态加载"""
+        import ast
+        with open("backup_manager/devices/registry.py") as f:
+            tree = ast.parse(f.read())
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call):
+                func = node.func
+                if isinstance(func, ast.Name) and func.id in ("__import__", "import_module"):
+                    self.fail("registry uses dynamic import")
+
+
+# ============================================================================
 # Security Boundary
 # ============================================================================
 

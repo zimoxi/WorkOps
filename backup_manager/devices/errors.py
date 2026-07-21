@@ -27,3 +27,18 @@ class DeviceModelValidationError(DeviceError):
 class CapabilityRequirementError(DeviceError):
     """能力需求错误"""
     pass
+
+
+class InvalidDeviceError(DeviceError):
+    """无效设备"""
+    pass
+
+
+class CapabilityNotFoundError(DeviceError):
+    """能力未找到"""
+    pass
+
+
+class CapabilityConflictError(DeviceError):
+    """能力冲突（重复注册）"""
+    pass
