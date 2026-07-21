@@ -48,3 +48,26 @@ class AdapterNotRegisteredError(AdapterError):
 class AdapterSessionStateError(AdapterError):
     """会话状态错误"""
     pass
+
+
+class AdapterCapabilityError(AdapterError):
+    """Adapter 能力错误"""
+    pass
+
+
+class AdapterAlreadyExistsError(AdapterError):
+    """Adapter 已存在"""
+    def __init__(self, adapter_type: str):
+        super().__init__(f"Adapter already registered: {adapter_type}")
+
+
+class AdapterNotFoundError(AdapterError):
+    """Adapter 未找到"""
+    def __init__(self, adapter_type: str):
+        super().__init__(f"Adapter not found: {adapter_type}")
+
+
+class CapabilityNotSupportedError(AdapterError):
+    """能力不支持"""
+    def __init__(self, adapter_type: str, capability: str):
+        super().__init__(f"Adapter {adapter_type} does not support {capability}")

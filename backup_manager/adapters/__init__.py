@@ -3,6 +3,7 @@ WorkOps Device Adapter Layer
 Sprint017: Device Adapter Foundation
 Sprint022: 新增 SSH ReadOnly Adapter
 Sprint023: 新增 Runtime 层
+Sprint026: 新增 Capability Registry
 """
 
 from .base import BaseAdapter
@@ -20,6 +21,10 @@ from .errors import (
     AdapterDuplicateError,
     AdapterNotRegisteredError,
     AdapterSessionStateError,
+    AdapterCapabilityError,
+    AdapterAlreadyExistsError,
+    AdapterNotFoundError,
+    CapabilityNotSupportedError,
 )
 from .ssh_errors import (
     SSHAdapterError,
@@ -38,6 +43,9 @@ from .registry import AdapterRegistry
 from .session import AdapterSession, SessionState
 from .runtime import AdapterRuntime
 from .result import AdapterQueryResult
+from .capability import AdapterCapabilityDeclaration
+from .capability_registry import AdapterCapabilityRegistry
+from .contracts import AdapterCapabilityProvider
 
 __all__ = [
     "BaseAdapter",
@@ -54,6 +62,10 @@ __all__ = [
     "AdapterDuplicateError",
     "AdapterNotRegisteredError",
     "AdapterSessionStateError",
+    "AdapterCapabilityError",
+    "AdapterAlreadyExistsError",
+    "AdapterNotFoundError",
+    "CapabilityNotSupportedError",
     "SSHAdapterError",
     "SSHConfigurationError",
     "SSHAuthenticationError",
@@ -70,4 +82,7 @@ __all__ = [
     "SessionState",
     "AdapterRuntime",
     "AdapterQueryResult",
+    "AdapterCapabilityDeclaration",
+    "AdapterCapabilityRegistry",
+    "AdapterCapabilityProvider",
 ]
