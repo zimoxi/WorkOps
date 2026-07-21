@@ -42,3 +42,20 @@ class CapabilityNotFoundError(DeviceError):
 class CapabilityConflictError(DeviceError):
     """能力冲突（重复注册）"""
     pass
+
+
+class DeviceInventoryError(DeviceError):
+    """设备清单错误"""
+    pass
+
+
+class DeviceAlreadyExistsError(DeviceInventoryError):
+    """设备已存在"""
+    def __init__(self, device_id: str):
+        super().__init__(f"Device already exists: {device_id}")
+
+
+class DeviceNotFoundError(DeviceInventoryError):
+    """设备未找到"""
+    def __init__(self, device_id: str):
+        super().__init__(f"Device not found: {device_id}")
