@@ -4,6 +4,7 @@ Sprint029: Backup Workflow Foundation
 Sprint030: Backup Execution Engine
 Sprint031: Backup Executor Framework
 Sprint032: Safe Executor Runtime
+Sprint033: Rsync Executor Foundation
 """
 
 from .errors import (
@@ -17,6 +18,8 @@ from .errors import (
     ExecutorAlreadyExistsError,
     ExecutorRuntimeError,
     ExecutionTimeoutError,
+    RsyncExecutorError,
+    InvalidRsyncCommandError,
 )
 from .state import BackupExecutionState
 from .models import BackupJob
@@ -32,6 +35,9 @@ from .timeout import ExecutionTimeout
 from .runtime import ExecutionContext
 from .runtime_executor import ExecutorRuntime
 from .result_collector import ExecutionResultCollector
+from .rsync import RsyncCommand
+from .process import ProcessRunner
+from .rsync_executor import RsyncExecutor
 
 __all__ = [
     "BackupWorkflowError",
@@ -44,6 +50,8 @@ __all__ = [
     "ExecutorAlreadyExistsError",
     "ExecutorRuntimeError",
     "ExecutionTimeoutError",
+    "RsyncExecutorError",
+    "InvalidRsyncCommandError",
     "BackupExecutionState",
     "BackupJob",
     "BackupSchedule",
@@ -58,4 +66,7 @@ __all__ = [
     "ExecutionContext",
     "ExecutorRuntime",
     "ExecutionResultCollector",
+    "RsyncCommand",
+    "ProcessRunner",
+    "RsyncExecutor",
 ]

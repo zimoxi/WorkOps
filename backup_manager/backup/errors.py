@@ -56,3 +56,13 @@ class ExecutionTimeoutError(BackupWorkflowError):
     """执行超时错误"""
     def __init__(self, execution_id: str = ""):
         super().__init__(f"Execution timed out: {execution_id}")
+
+
+class RsyncExecutorError(BackupWorkflowError):
+    """rsync 执行器错误"""
+    pass
+
+
+class InvalidRsyncCommandError(BackupWorkflowError):
+    """无效的 rsync 命令"""
+    pass
