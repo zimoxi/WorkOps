@@ -45,3 +45,14 @@ class ExecutorAlreadyExistsError(BackupWorkflowError):
     """执行器已存在"""
     def __init__(self, executor_type: str):
         super().__init__(f"Executor already registered: {executor_type}")
+
+
+class ExecutorRuntimeError(BackupWorkflowError):
+    """执行运行时错误"""
+    pass
+
+
+class ExecutionTimeoutError(BackupWorkflowError):
+    """执行超时错误"""
+    def __init__(self, execution_id: str = ""):
+        super().__init__(f"Execution timed out: {execution_id}")
