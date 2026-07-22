@@ -312,9 +312,11 @@ class TestSecurityBoundary(unittest.TestCase):
     def test_no_subprocess(self):
         import ast
         import os
+        # system_process.py 合法使用 subprocess.run
+        excluded = {"system_process.py"}
         backup_dir = os.path.join("backup_manager", "backup")
         for filename in os.listdir(backup_dir):
-            if not filename.endswith(".py"):
+            if not filename.endswith(".py") or filename in excluded:
                 continue
             filepath = os.path.join(backup_dir, filename)
             with open(filepath) as f:

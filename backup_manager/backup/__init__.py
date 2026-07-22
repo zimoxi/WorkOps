@@ -1,10 +1,6 @@
 """
 WorkOps Backup Workflow Domain — 备份工作流域
-Sprint029: Backup Workflow Foundation
-Sprint030: Backup Execution Engine
-Sprint031: Backup Executor Framework
-Sprint032: Safe Executor Runtime
-Sprint033: Rsync Executor Foundation
+Sprint029-Sprint034
 """
 
 from .errors import (
@@ -20,6 +16,8 @@ from .errors import (
     ExecutionTimeoutError,
     RsyncExecutorError,
     InvalidRsyncCommandError,
+    ProcessExecutionError,
+    RsyncExecutionFailedError,
 )
 from .state import BackupExecutionState
 from .models import BackupJob
@@ -37,7 +35,9 @@ from .runtime_executor import ExecutorRuntime
 from .result_collector import ExecutionResultCollector
 from .rsync import RsyncCommand
 from .process import ProcessRunner
+from .process_result import ProcessResult
 from .rsync_executor import RsyncExecutor
+from .system_process import SystemProcessRunner
 
 __all__ = [
     "BackupWorkflowError",
@@ -52,6 +52,8 @@ __all__ = [
     "ExecutionTimeoutError",
     "RsyncExecutorError",
     "InvalidRsyncCommandError",
+    "ProcessExecutionError",
+    "RsyncExecutionFailedError",
     "BackupExecutionState",
     "BackupJob",
     "BackupSchedule",
@@ -68,5 +70,7 @@ __all__ = [
     "ExecutionResultCollector",
     "RsyncCommand",
     "ProcessRunner",
+    "ProcessResult",
     "RsyncExecutor",
+    "SystemProcessRunner",
 ]

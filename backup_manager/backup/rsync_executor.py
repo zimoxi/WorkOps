@@ -1,9 +1,10 @@
 """
 WorkOps Rsync Executor — rsync 执行器
 Sprint033: Rsync Executor Foundation
+Sprint034: Rsync Real Execution Layer
 
 executor_type: "rsync"
-使用 ProcessRunner 接口。不直接调用 subprocess。
+使用 ProcessRunner 接口。支持真实执行。
 """
 
 from .executor import BackupExecutor
@@ -11,14 +12,14 @@ from .executor_result import ExecutorResult
 from .execution import BackupExecution
 from .rsync import RsyncCommand
 from .process import ProcessRunner
-from .errors import RsyncExecutorError
+from .errors import RsyncExecutorError, RsyncExecutionFailedError
 
 
 class RsyncExecutor(BackupExecutor):
     """
     rsync 执行器。
 
-    使用 ProcessRunner 接口。不直接调用 subprocess。
+    使用 ProcessRunner 接口。支持真实执行。
     """
 
     executor_type = "rsync"
@@ -47,6 +48,39 @@ class RsyncExecutor(BackupExecutor):
                 success=result.get("success", False),
                 message=result.get("message", ""),
             )
+        except Exception as e:
+            return ExecutorResult(
+                success=False,
+                message=f"Execution failed: {type(e).__name__}",
+            )
+
+    def execute_rsync(self, rsync_command: RsyncCommand, timeout: int = 300) -> ExecutorResult:
+        """
+        执行 rsync 命令。
+
+        Args:
+            rsync_command: rsync 命令
+            timeout: 超时秒数
+
+        Returns:
+            ExecutorResult
+        """
+        if self._runner is None:
+            return ExecutorResult(
+                success=False,
+                message="No process runner configured",
+            )
+        args = self.build_command(rsync_command)
+        try:
+            result = self._runner.run(args, timeout=timeout)
+            return ExecutorResult(
+                success=result.success,
+                message=result.stderr if not result.success else "rsync completed",
+                started_at=None,
+                finished_at=None,
+            )
+        except RsyncExecutionFailedError as e:
+            return ExecutorResult(success=False, message=str(e))
         except Exception as e:
             return ExecutorResult(
                 success=False,

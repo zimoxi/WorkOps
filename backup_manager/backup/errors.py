@@ -66,3 +66,19 @@ class RsyncExecutorError(BackupWorkflowError):
 class InvalidRsyncCommandError(BackupWorkflowError):
     """无效的 rsync 命令"""
     pass
+
+
+class ProcessExecutionError(BackupWorkflowError):
+    """进程执行错误"""
+    pass
+
+
+class RsyncExecutionFailedError(BackupWorkflowError):
+    """rsync 执行失败"""
+    def __init__(self, exit_code: int = -1, stderr: str = ""):
+        msg = f"rsync failed with exit code {exit_code}"
+        if stderr:
+            # 截断 stderr 避免泄漏敏感信息
+            safe = stderr[:200]
+            msg += f": {safe}"
+        super().__init__(msg)
