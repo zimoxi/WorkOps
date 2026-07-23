@@ -1,6 +1,7 @@
 """
 WorkOps Backup Workflow Domain — 备份工作流域
 Sprint029-Sprint034
+Sprint041: Backup Workflow Foundation v1
 """
 
 from .errors import (
@@ -38,6 +39,16 @@ from .process import ProcessRunner
 from .process_result import ProcessResult
 from .rsync_executor import RsyncExecutor
 from .system_process import SystemProcessRunner
+from .workflow_errors import (
+    BackupWorkflowError as BackupWorkflowV1Error,
+    InvalidBackupRequestError,
+    BackupConflictError,
+    BackupNotFoundError,
+)
+from .workflow_model import BackupType, BackupStatus, BackupWorkflow
+from .workflow_request import BackupRequest
+from .workflow_result import BackupResult
+from .workflow_executor import BackupWorkflowExecutor
 
 __all__ = [
     "BackupWorkflowError",
@@ -73,4 +84,14 @@ __all__ = [
     "ProcessResult",
     "RsyncExecutor",
     "SystemProcessRunner",
+    "BackupWorkflowV1Error",
+    "InvalidBackupRequestError",
+    "BackupConflictError",
+    "BackupNotFoundError",
+    "BackupType",
+    "BackupStatus",
+    "BackupWorkflow",
+    "BackupRequest",
+    "BackupResult",
+    "BackupWorkflowExecutor",
 ]
