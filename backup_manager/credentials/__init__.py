@@ -28,3 +28,26 @@ __all__ = [
     "redact",
     "redact_text",
 ]
+
+# Sprint047: Credential Binding Layer Foundation
+from .binding_errors import (
+    CredentialBindingError,
+    InvalidCredentialReferenceError,
+    CredentialBindingConflictError,
+    CredentialNotFoundError,
+)
+from .binding_model import CredentialType, CredentialReference
+from .binding_requirement import CredentialRequirement
+from .binding import CredentialBinding, CredentialBindingResolver
+
+__all__ += [
+    "CredentialBindingError",
+    "InvalidCredentialReferenceError",
+    "CredentialBindingConflictError",
+    "CredentialNotFoundError",
+    "CredentialType",
+    "CredentialReference",
+    "CredentialRequirement",
+    "CredentialBinding",
+    "CredentialBindingResolver",
+]
