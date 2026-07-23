@@ -1,34 +1,24 @@
 """
-WorkOps API Layer — API 层基础
-Sprint014: API Layer Foundation
-
-统一 API Response 格式
-Error Handling
-API Router 基础结构
+WorkOps Unified Operation API — 统一操作 API
+Sprint045: Unified Operation API Foundation
 """
 
-from .response import success_response, error_response, list_response
 from .errors import (
-    ApiError,
-    ValidationError,
-    UnauthorizedError,
-    ForbiddenError,
-    NotFoundError,
-    ConflictError,
-    InternalError,
+    OperationAPIError,
+    InvalidOperationRequestError,
+    OperationSubmissionError,
+    OperationUnavailableError,
 )
-from .router import handle_api_request
+from .request import OperationRequestModel
+from .response import OperationResponseModel
+from .gateway import OperationGateway
 
 __all__ = [
-    "success_response",
-    "error_response",
-    "list_response",
-    "ApiError",
-    "ValidationError",
-    "UnauthorizedError",
-    "ForbiddenError",
-    "NotFoundError",
-    "ConflictError",
-    "InternalError",
-    "handle_api_request",
+    "OperationAPIError",
+    "InvalidOperationRequestError",
+    "OperationSubmissionError",
+    "OperationUnavailableError",
+    "OperationRequestModel",
+    "OperationResponseModel",
+    "OperationGateway",
 ]
