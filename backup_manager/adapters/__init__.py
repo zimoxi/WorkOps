@@ -122,3 +122,28 @@ __all__ = [
     "OMVStatus",
     "OMVClient",
 ]
+
+# Sprint046: Adapter Integration Foundation
+from .adapter_errors import (
+    AdapterIntegrationError,
+    InvalidAdapterError,
+    AdapterConflictError,
+    AdapterNotFoundError as AdapterIntegrationNotFoundError,
+)
+from .adapter_model import AdapterType
+from .adapter_descriptor import AdapterDescriptor
+from .adapter_provider import AdapterProvider
+from .adapter_registry import AdapterIntegrationRegistry
+from .adapter_integration import AdapterIntegration
+
+__all__ += [
+    "AdapterIntegrationError",
+    "InvalidAdapterError",
+    "AdapterConflictError",
+    "AdapterIntegrationNotFoundError",
+    "AdapterType",
+    "AdapterDescriptor",
+    "AdapterProvider",
+    "AdapterIntegrationRegistry",
+    "AdapterIntegration",
+]
