@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WorkOps Dashboard</title>
+    <link rel="stylesheet" href="/static/dashboard/dashboard.css">
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h2>WorkOps</h2>
+            <span class="version">v1.0.0</span>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item active" data-page="home">
+                <a href="#home">🏠 Dashboard</a>
+            </li>
+            <li class="nav-item" data-page="devices">
+                <a href="#devices">🖥️ Devices</a>
+            </li>
+            <li class="nav-item" data-page="backup">
+                <a href="#backup">💾 Backup</a>
+            </li>
+            <li class="nav-item" data-page="restore">
+                <a href="#restore">🔄 Restore</a>
+            </li>
+            <li class="nav-item" data-page="health">
+                <a href="#health">❤️ Health</a>
+            </li>
+            <li class="nav-item" data-page="metrics">
+                <a href="#metrics">📊 Metrics</a>
+            </li>
+        </ul>
+    </nav>
+
+    <main class="content">
+        <!-- Home Page -->
+        <section id="page-home" class="page active">
+            <h1>System Overview</h1>
+            <div class="cards">
+                <div class="card status-card">
+                    <h3>System Status</h3>
+                    <div class="status-indicator online" id="system-status">Online</div>
+                </div>
+                <div class="card">
+                    <h3>Runtime Summary</h3>
+                    <div id="runtime-summary">Loading...</div>
+                </div>
+                <div class="card">
+                    <h3>Backup Summary</h3>
+                    <div id="backup-summary">Loading...</div>
+                </div>
+                <div class="card">
+                    <h3>Restore Summary</h3>
+                    <div id="restore-summary">Loading...</div>
+                </div>
+                <div class="card">
+                    <h3>Health Summary</h3>
+                    <div id="health-summary">Loading...</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Devices Page -->
+        <section id="page-devices" class="page">
+            <h1>Device Management</h1>
+            <div class="table-container">
+                <table id="devices-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Last Seen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="devices-body">
+                        <tr><td colspan="4">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Backup Page -->
+        <section id="page-backup" class="page">
+            <h1>Backup Management</h1>
+            <button class="btn btn-primary" id="create-backup-btn">Create Backup</button>
+            <div class="table-container">
+                <table id="backup-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Result</th>
+                        </tr>
+                    </thead>
+                    <tbody id="backup-body">
+                        <tr><td colspan="4">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Restore Page -->
+        <section id="page-restore" class="page">
+            <h1>Restore Management</h1>
+            <div class="table-container">
+                <table id="restore-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Source</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                        </tr>
+                    </thead>
+                    <tbody id="restore-body">
+                        <tr><td colspan="4">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Health Page -->
+        <section id="page-health" class="page">
+            <h1>Runtime Health</h1>
+            <div class="cards" id="health-cards">
+                <div class="card">
+                    <h3>Linux Runtime</h3>
+                    <div class="status-indicator" id="health-linux">Checking...</div>
+                </div>
+                <div class="card">
+                    <h3>PVE Runtime</h3>
+                    <div class="status-indicator" id="health-pve">Checking...</div>
+                </div>
+                <div class="card">
+                    <h3>OMV Runtime</h3>
+                    <div class="status-indicator" id="health-omv">Checking...</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Metrics Page -->
+        <section id="page-metrics" class="page">
+            <h1>Operation Metrics</h1>
+            <div class="cards">
+                <div class="card metric-card">
+                    <h3>Backup Count</h3>
+                    <div class="metric-value" id="metric-backup">0</div>
+                </div>
+                <div class="card metric-card">
+                    <h3>Restore Count</h3>
+                    <div class="metric-value" id="metric-restore">0</div>
+                </div>
+                <div class="card metric-card">
+                    <h3>Runtime Checks</h3>
+                    <div class="metric-value" id="metric-health">0</div>
+                </div>
+                <div class="card metric-card">
+                    <h3>Tasks</h3>
+                    <div class="metric-value" id="metric-tasks">0</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="/static/dashboard/dashboard.js"></script>
+</body>
+</html>
