@@ -1,11 +1,26 @@
 """
-WorkOps Device Errors — 设备域错误
-Sprint024: Device Capability Model
+WorkOps Device Management Errors — 设备管理错误
+Sprint077: Device Management Foundation
 """
 
 
 class DeviceError(Exception):
-    """设备域错误基类"""
+    """设备错误基类"""
+    pass
+
+
+class DeviceManagementError(DeviceError):
+    """设备管理错误"""
+    pass
+
+
+class DeviceNotFoundError(DeviceManagementError):
+    """设备未找到"""
+    pass
+
+
+class InvalidDeviceError(DeviceManagementError):
+    """无效设备"""
     pass
 
 
@@ -20,7 +35,7 @@ class DeviceCapabilityError(DeviceError):
 
 
 class DeviceModelValidationError(DeviceError):
-    """设备模型校验错误"""
+    """设备模型验证错误"""
     pass
 
 
@@ -29,8 +44,8 @@ class CapabilityRequirementError(DeviceError):
     pass
 
 
-class InvalidDeviceError(DeviceError):
-    """无效设备"""
+class CapabilityConflictError(DeviceError):
+    """能力冲突"""
     pass
 
 
@@ -39,23 +54,11 @@ class CapabilityNotFoundError(DeviceError):
     pass
 
 
-class CapabilityConflictError(DeviceError):
-    """能力冲突（重复注册）"""
-    pass
-
-
 class DeviceInventoryError(DeviceError):
     """设备清单错误"""
     pass
 
 
-class DeviceAlreadyExistsError(DeviceInventoryError):
+class DeviceAlreadyExistsError(DeviceError):
     """设备已存在"""
-    def __init__(self, device_id: str):
-        super().__init__(f"Device already exists: {device_id}")
-
-
-class DeviceNotFoundError(DeviceInventoryError):
-    """设备未找到"""
-    def __init__(self, device_id: str):
-        super().__init__(f"Device not found: {device_id}")
+    pass
