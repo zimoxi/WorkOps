@@ -13,6 +13,9 @@ from .request import OperationRequestModel
 from .response import OperationResponseModel
 from .gateway import OperationGateway
 
+# Backward-compatible aliases for legacy server.py
+from ._compat import handle_api_request, ApiError, error_response
+
 __all__ = [
     "OperationAPIError",
     "InvalidOperationRequestError",
@@ -21,4 +24,8 @@ __all__ = [
     "OperationRequestModel",
     "OperationResponseModel",
     "OperationGateway",
+    # Legacy compat
+    "handle_api_request",
+    "ApiError",
+    "error_response",
 ]

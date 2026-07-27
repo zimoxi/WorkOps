@@ -15,6 +15,9 @@ from .scheduler import JobScheduler
 from .worker import JobWorker
 from .history import JobHistory
 
+# Backward-compatible aliases for legacy server.py
+from ._compat import JobRecord, JobStore, now_iso
+
 __all__ = [
     "JobError",
     "InvalidJobError",
@@ -26,4 +29,8 @@ __all__ = [
     "JobScheduler",
     "JobWorker",
     "JobHistory",
+    # Legacy compat
+    "JobRecord",
+    "JobStore",
+    "now_iso",
 ]
