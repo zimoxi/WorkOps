@@ -1,8 +1,8 @@
 """
-WorkOps Dashboard Routes Contract — 仪表盘路由接口
-Sprint073: Web Dashboard Foundation
+WorkOps Dashboard Routes — 仪表盘路由
+Sprint073/Sprint075: Web Dashboard Foundation / Dashboard Runtime Integration
 
-只定义接口。不实现 HTTP 路由。
+Routes return Dashboard View Models.
 """
 
 from abc import ABC, abstractmethod
@@ -22,7 +22,7 @@ class DashboardRoutes(ABC):
         /metrics
         /audit
 
-    只定义接口。不实现 HTTP 路由。
+    返回: Dashboard View Models
     """
 
     @abstractmethod

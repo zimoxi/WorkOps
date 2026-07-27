@@ -25,6 +25,9 @@ from backup_manager.dashboard.models import (
 )
 from backup_manager.dashboard.service import DashboardService
 from backup_manager.dashboard.routes import DashboardRoutes
+from backup_manager.dashboard.providers.health_provider import HealthSummary
+from backup_manager.dashboard.providers.metrics_provider import MetricsSummary
+from backup_manager.dashboard.providers.audit_provider import AuditSummary
 from backup_manager.dashboard.errors import (
     DashboardError,
     DashboardUnavailableError,
@@ -322,6 +325,12 @@ class TestDashboardServiceContract(unittest.TestCase):
                 return _make_backup_overview()
             def get_restore_status(self):
                 return _make_restore_overview()
+            def get_health_status(self):
+                return HealthSummary(system_state="healthy", runtime_available=True, message="ok")
+            def get_metrics_status(self):
+                return MetricsSummary(operation_count=100, runtime_count=3, message="ok")
+            def get_audit_status(self):
+                return AuditSummary(total_events=500, recent_events=10, message="ok")
         service = MockService()
         overview = service.get_overview()
         self.assertEqual(overview.system_name, "WorkOps")
@@ -488,6 +497,12 @@ class TestSecurityBoundary(unittest.TestCase):
                 return _make_backup_overview()
             def get_restore_status(self):
                 return _make_restore_overview()
+            def get_health_status(self):
+                return HealthSummary(system_state="healthy", runtime_available=True, message="ok")
+            def get_metrics_status(self):
+                return MetricsSummary(operation_count=100, runtime_count=3, message="ok")
+            def get_audit_status(self):
+                return AuditSummary(total_events=500, recent_events=10, message="ok")
         service = MockService()
         overview = service.get_overview()
         self.assertEqual(overview.status, DashboardStatus.ONLINE)
@@ -613,6 +628,12 @@ class TestDashboardExtended(unittest.TestCase):
                 return _make_backup_overview()
             def get_restore_status(self):
                 return _make_restore_overview()
+            def get_health_status(self):
+                return HealthSummary(system_state="healthy", runtime_available=True, message="ok")
+            def get_metrics_status(self):
+                return MetricsSummary(operation_count=100, runtime_count=3, message="ok")
+            def get_audit_status(self):
+                return AuditSummary(total_events=500, recent_events=10, message="ok")
         service = MockService()
         result = service.get_overview()
         self.assertIsInstance(result, DashboardViewModel)
@@ -627,6 +648,12 @@ class TestDashboardExtended(unittest.TestCase):
                 return _make_backup_overview()
             def get_restore_status(self):
                 return _make_restore_overview()
+            def get_health_status(self):
+                return HealthSummary(system_state="healthy", runtime_available=True, message="ok")
+            def get_metrics_status(self):
+                return MetricsSummary(operation_count=100, runtime_count=3, message="ok")
+            def get_audit_status(self):
+                return AuditSummary(total_events=500, recent_events=10, message="ok")
         service = MockService()
         result = service.get_runtime_status()
         self.assertIsInstance(result, list)
@@ -642,6 +669,12 @@ class TestDashboardExtended(unittest.TestCase):
                 return _make_backup_overview()
             def get_restore_status(self):
                 return _make_restore_overview()
+            def get_health_status(self):
+                return HealthSummary(system_state="healthy", runtime_available=True, message="ok")
+            def get_metrics_status(self):
+                return MetricsSummary(operation_count=100, runtime_count=3, message="ok")
+            def get_audit_status(self):
+                return AuditSummary(total_events=500, recent_events=10, message="ok")
         service = MockService()
         result = service.get_backup_status()
         self.assertIsInstance(result, BackupOverview)
@@ -656,6 +689,12 @@ class TestDashboardExtended(unittest.TestCase):
                 return _make_backup_overview()
             def get_restore_status(self):
                 return _make_restore_overview()
+            def get_health_status(self):
+                return HealthSummary(system_state="healthy", runtime_available=True, message="ok")
+            def get_metrics_status(self):
+                return MetricsSummary(operation_count=100, runtime_count=3, message="ok")
+            def get_audit_status(self):
+                return AuditSummary(total_events=500, recent_events=10, message="ok")
         service = MockService()
         result = service.get_restore_status()
         self.assertIsInstance(result, RestoreOverview)
@@ -812,12 +851,24 @@ class TestDashboardExtended(unittest.TestCase):
             def get_restore_status(self):
                 self.call_count += 1
                 return _make_restore_overview()
+            def get_health_status(self):
+                self.call_count += 1
+                return HealthSummary(system_state="healthy", runtime_available=True, message="ok")
+            def get_metrics_status(self):
+                self.call_count += 1
+                return MetricsSummary(operation_count=100, runtime_count=3, message="ok")
+            def get_audit_status(self):
+                self.call_count += 1
+                return AuditSummary(total_events=500, recent_events=10, message="ok")
         service = MockService()
         service.get_overview()
         service.get_runtime_status()
         service.get_backup_status()
         service.get_restore_status()
-        self.assertEqual(service.call_count, 4)
+        service.get_health_status()
+        service.get_metrics_status()
+        service.get_audit_status()
+        self.assertEqual(service.call_count, 7)
 
     def test_view_model_large_runtime_count(self):
         model = _make_view_model(runtime_count=1000)
@@ -865,6 +916,12 @@ class TestDashboardExtended(unittest.TestCase):
                 return _make_backup_overview()
             def get_restore_status(self):
                 return _make_restore_overview()
+            def get_health_status(self):
+                return HealthSummary(system_state="healthy", runtime_available=True, message="ok")
+            def get_metrics_status(self):
+                return MetricsSummary(operation_count=100, runtime_count=3, message="ok")
+            def get_audit_status(self):
+                return AuditSummary(total_events=500, recent_events=10, message="ok")
         service = MockService()
         result = service.get_overview()
         self.assertIsInstance(result, DashboardViewModel)
@@ -879,6 +936,12 @@ class TestDashboardExtended(unittest.TestCase):
                 return _make_backup_overview()
             def get_restore_status(self):
                 return _make_restore_overview()
+            def get_health_status(self):
+                return HealthSummary(system_state="healthy", runtime_available=True, message="ok")
+            def get_metrics_status(self):
+                return MetricsSummary(operation_count=100, runtime_count=3, message="ok")
+            def get_audit_status(self):
+                return AuditSummary(total_events=500, recent_events=10, message="ok")
         service = MockService()
         result = service.get_runtime_status()
         self.assertIsInstance(result, list)
@@ -893,6 +956,12 @@ class TestDashboardExtended(unittest.TestCase):
                 return _make_backup_overview()
             def get_restore_status(self):
                 return _make_restore_overview()
+            def get_health_status(self):
+                return HealthSummary(system_state="healthy", runtime_available=True, message="ok")
+            def get_metrics_status(self):
+                return MetricsSummary(operation_count=100, runtime_count=3, message="ok")
+            def get_audit_status(self):
+                return AuditSummary(total_events=500, recent_events=10, message="ok")
         service = MockService()
         result = service.get_backup_status()
         self.assertIsInstance(result, BackupOverview)
@@ -907,6 +976,12 @@ class TestDashboardExtended(unittest.TestCase):
                 return _make_backup_overview()
             def get_restore_status(self):
                 return _make_restore_overview()
+            def get_health_status(self):
+                return HealthSummary(system_state="healthy", runtime_available=True, message="ok")
+            def get_metrics_status(self):
+                return MetricsSummary(operation_count=100, runtime_count=3, message="ok")
+            def get_audit_status(self):
+                return AuditSummary(total_events=500, recent_events=10, message="ok")
         service = MockService()
         result = service.get_restore_status()
         self.assertIsInstance(result, RestoreOverview)

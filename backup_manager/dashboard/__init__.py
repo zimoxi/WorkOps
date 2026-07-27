@@ -1,6 +1,6 @@
 """
 WorkOps Dashboard Domain — 仪表盘域
-Sprint073: Web Dashboard Foundation
+Sprint073/Sprint075: Web Dashboard Foundation / Dashboard Runtime Integration
 """
 
 from .errors import (
@@ -17,6 +17,17 @@ from .models import (
 )
 from .service import DashboardService
 from .routes import DashboardRoutes
+from .providers import (
+    RuntimeDashboardProvider,
+    BackupDashboardProvider,
+    RestoreDashboardProvider,
+    HealthDashboardProvider,
+    MetricsDashboardProvider,
+    AuditDashboardProvider,
+)
+from .providers.health_provider import HealthSummary
+from .providers.metrics_provider import MetricsSummary
+from .providers.audit_provider import AuditSummary
 
 __all__ = [
     "DashboardError",
@@ -29,4 +40,13 @@ __all__ = [
     "RestoreOverview",
     "DashboardService",
     "DashboardRoutes",
+    "RuntimeDashboardProvider",
+    "BackupDashboardProvider",
+    "RestoreDashboardProvider",
+    "HealthDashboardProvider",
+    "MetricsDashboardProvider",
+    "AuditDashboardProvider",
+    "HealthSummary",
+    "MetricsSummary",
+    "AuditSummary",
 ]
